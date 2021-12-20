@@ -1,2 +1,2 @@
-# linux_shell4windows
+# linux-shell4windows
 OS programming assignment
