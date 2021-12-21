@@ -7,6 +7,7 @@ HANDLE	handle_out;
 DWORD dw;
 
 int console();
+void getArgv(char *command, char *argv[8], int *argc);
 /* TODO */
 
 int console() {
@@ -26,12 +27,12 @@ int console() {
 
 		// define a buffer to receive command and argv
 		char *command = (char*)malloc(sizeof(char) * 512);  //1KB
-		// char *argv[8];  //max 8 argv(8*64 = 512)
-		// int *argc = (int*)malloc(sizeof(int));
+		char *argv[8];  //max 8 argv(8*64 = 512)
+		int *argc = (int*)malloc(sizeof(int*));
 
-		// get command form console input buffer
+		// get command from console input
 		ReadConsole(handle_in, command, 512, &dw, NULL);
-		// getArgv(command, argv, argc);
+		getArgv(command, argv, argc);
 	}
 
 	CloseHandle(handle_out);
