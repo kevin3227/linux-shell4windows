@@ -8,6 +8,8 @@ DWORD dw;
 
 int console();
 void getArgv(char *command, char *argv[8], int *argc);
+void cls(HANDLE hConsole);
+void more(char* argv[8], int* argc);
 /* TODO */
 
 int console() {
@@ -33,12 +35,16 @@ int console() {
 		// get command from console input
 		ReadConsole(handle_in, command, 512, &dw, NULL);
 		getArgv(command, argv, argc);
+		if ((*argc)+1 == 0) continue;
+		else if (!strcmp(argv[0], "more")) {
+			more(argv, argc);
+		}
+		// else if
+		/* TODO */
 	}
 
 	CloseHandle(handle_out);
 	CloseHandle(handle_in);
-
-	/* TODO */
 
 	return 0;
 }
