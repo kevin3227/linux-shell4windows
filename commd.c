@@ -22,11 +22,11 @@ void getArgv(char *command, char *argv[8], int *argc) {
 		// save the split argv
 		argv[(*argc)] = (char*)malloc(sizeof(char) * 64);
 		// if character is space or enter or alt than move
-		while ((*command_index) == ' ') {
+		while ((*command_index) == ' ')	{
 			command_index++;
 		}
 		// remove space enter alt
-		while ((*command_index) != ' ' && (*command_index) != '\n' && (*command_index) != '\r' && (*command_index) != '\0') {
+		while ((*command_index) != ' ' && (*command_index) != '\n' && (*command_index) != '\r' && (*command_index) != '\0')	{
 			// judge command character and save to the split argv
 			*(argv[(*argc)] + index) = (*command_index);
 			command_index++;
@@ -86,17 +86,17 @@ void cls(HANDLE hConsole)
 }
 
 //command "more"
-void more(char* argv[8], int* argc) {
+ void more(char* argv[8], int* argc) {
 	// no arguments 
 	if ((*argc) == 0) {
 		WriteConsole(
-			handle_out,
-			"Please enter arguments. For further info, try 'man more'\n",
-			strlen("Please enter arguments. For further info, try 'man more'\n"),
-			&dw,
-			NULL);
+		handle_out, 
+		"Please enter arguments. For further info, try 'man more'\n", 
+		strlen("Please enter arguments. For further info, try 'man more'\n"),	
+		&dw, 
+		NULL);
 		return;
-	}
+	 }
 	FILE* fp;
 	errno_t err = fopen_s(&fp, argv[1], "r");
 	if (err) {
@@ -129,20 +129,20 @@ void more(char* argv[8], int* argc) {
 					conf = _getch();
 				}
 				switch (conf) {
-				case (' '):
-				case ('\r'):
-					cls(handle_out);
-					count = 0;
-					count_c = 1;
-					flag = 0;
-					break;
+					case (' '):
+					case ('\r'):
+						cls(handle_out);
+						count = 0;
+						count_c = 1;
+						flag = 0;
+						break;
 
-				case ('q'):
-					cls(handle_out);
-					return;
+					case ('q'):
+						cls(handle_out);
+						return;
 
-				default:
-					break;
+					default:
+						break;
 				}
 			}
 
