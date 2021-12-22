@@ -87,64 +87,66 @@ void cls(HANDLE hConsole)
 
 //command "more"
  void more(char* argv[8], int* argc) {
-	 if ((*argc) == 0) {
-		 WriteConsole(
-			 handle_out, 
-			 "Please enter arguments. For further info, try 'man more'\n", 
-			 strlen("Please enter arguments. For further info, try 'man more'\n"),	
-			 &dw, 
-			 NULL);
-		 return;
+	if ((*argc) == 0) {
+		WriteConsole(
+		handle_out, 
+		"Please enter arguments. For further info, try 'man more'\n", 
+		strlen("Please enter arguments. For further info, try 'man more'\n"),	
+		&dw, 
+		NULL);
+		return;
 	 }
-	 FILE* fp;
-	 errno_t err = fopen_s(&fp, argv[1], "r");
-	 if (err) {
-		 WriteConsole(handle_out, "Failed to open file\n", strlen("Failed to open file\n"), &dw, NULL);
-	 }
-	 CONSOLE_SCREEN_BUFFER_INFO csbi;
-	 int conf, flag, count = 0, count_c = 0, size_r, size_c;
-	 char tmp;
-	 GetConsoleScreenBufferInfo(handle_out, &csbi);
+	FILE* fp;
+	errno_t err = fopen_s(&fp, argv[1], "r");
+	if (err) {
+		WriteConsole(handle_out, "Failed to open file\n", strlen("Failed to open file\n"), &dw, NULL);
+	}
+	CONSOLE_SCREEN_BUFFER_INFO csbi;
+	int conf, flag, count = 0, count_c = 0, size_r, size_c;
+	char tmp;
+	GetConsoleScreenBufferInfo(handle_out, &csbi);
 
-	 while (fp) {
-		 size_r = csbi.srWindow.Right - csbi.srWindow.Left + 1;
-		 size_c = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
-		 count++;
-		 tmp = fgetc(fp);
-		 if (tmp == EOF) break;
-		 else if (tmp == '\n' || count >= size_r) {
-			 count_c++;
-			 count = 0;
-		 }
-		 else if (count_c >= size_c) {
-			 WriteConsole(handle_out, " --more-- ", strlen(" --more-- "), &dw, NULL);
-			 flag = 1;
-			 while (flag) {
-				 conf = -1;
-				 if (_kbhit()) {
-					 conf = _getch();
-				 }
-				 switch (conf) {
-				 case (' '):
-					 cls(handle_out);
-					 count = 0;
-					 count_c = 1;
-					 flag = 0;
-					 break;
-				 case ('q'):
-					 cls(handle_out);
-					 return;
-				 default:
-					 break;
-				 }
-			 }
+	while (fp) {
+		size_r = csbi.srWindow.Right - csbi.srWindow.Left + 1;
+		size_c = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
+		count++;
+		tmp = fgetc(fp);
+		if (tmp == EOF) break;
+		else if (tmp == '\n' || count >= size_r) {
+			count_c++;
+			count = 0;
+		}
+		else if (count_c >= size_c) {
+			WriteConsole(handle_out, " --more-- ", strlen(" --more-- "), &dw, NULL);
+			flag = 1;
+			while (flag) {
+				conf = -1;
+				if (_kbhit()) {
+					conf = _getch();
+				}
+				switch (conf) {
+					case (' '):
+					case ('\r'):
+						cls(handle_out);
+						count = 0;
+						count_c = 1;
+						flag = 0;
+						break;
 
-		 }
-		 putchar(tmp);
-		 // WriteConsole(handle_out, tmp, strlen(tmp), &dw, NULL);
-	 }
-	 // cls(handle_out);
-	 fclose(fp);
+					case ('q'):
+						cls(handle_out);
+						return;
+
+					default:
+						break;
+				}
+			}
+
+		}
+		putchar(tmp);
+		// WriteConsole(handle_out, tmp, strlen(tmp), &dw, NULL);
+	}
+	// cls(handle_out);
+	fclose(fp);
 }
 /* TODO */
-
