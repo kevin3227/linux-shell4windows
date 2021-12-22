@@ -114,12 +114,12 @@ void cls(HANDLE hConsole)
 		count++;
 		tmp = fgetc(fp);
 		if (tmp == EOF) break;
-		// new line
+		// another line
 		else if (tmp == '\n' || count >= size_r) {
 			count_c++;
 			count = 0;
 		}
-		// new page
+		// another page
 		else if (count_c >= size_c) {
 			WriteConsole(handle_out, " --more-- ", strlen(" --more-- "), &dw, NULL);
 			flag = 1;
