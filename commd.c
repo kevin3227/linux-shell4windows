@@ -87,6 +87,7 @@ void cls(HANDLE hConsole)
 
 //command "more"
  void more(char* argv[8], int* argc) {
+	// no arguments 
 	if ((*argc) == 0) {
 		WriteConsole(
 		handle_out, 
@@ -107,15 +108,18 @@ void cls(HANDLE hConsole)
 	GetConsoleScreenBufferInfo(handle_out, &csbi);
 
 	while (fp) {
+		// get window size
 		size_r = csbi.srWindow.Right - csbi.srWindow.Left + 1;
 		size_c = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
 		count++;
 		tmp = fgetc(fp);
 		if (tmp == EOF) break;
+		// new line
 		else if (tmp == '\n' || count >= size_r) {
 			count_c++;
 			count = 0;
 		}
+		// new page
 		else if (count_c >= size_c) {
 			WriteConsole(handle_out, " --more-- ", strlen(" --more-- "), &dw, NULL);
 			flag = 1;
