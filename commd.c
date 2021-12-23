@@ -4,6 +4,8 @@
 #include<stdio.h>
 #include<string.h>
 #include<conio.h>
+#include<math.h>
+#define MAX_PAGENUM 128
 
 HANDLE	handle_in;
 HANDLE	handle_out;
@@ -22,11 +24,11 @@ void getArgv(char *command, char *argv[8], int *argc) {
 		// save the split argv
 		argv[(*argc)] = (char*)malloc(sizeof(char) * 64);
 		// if character is space or enter or alt than move
-		while ((*command_index) == ' ')	{
+		while ((*command_index) == ' ') {
 			command_index++;
 		}
 		// remove space enter alt
-		while ((*command_index) != ' ' && (*command_index) != '\n' && (*command_index) != '\r' && (*command_index) != '\0')	{
+		while ((*command_index) != ' ' && (*command_index) != '\n' && (*command_index) != '\r' && (*command_index) != '\0') {
 			// judge command character and save to the split argv
 			*(argv[(*argc)] + index) = (*command_index);
 			command_index++;
@@ -86,68 +88,155 @@ void cls(HANDLE hConsole)
 }
 
 //command "more"
- void more(char* argv[8], int* argc) {
+void more(char* argv[8], int* argc) {
+	cls(handle_out);
 	// no arguments 
 	if ((*argc) == 0) {
 		WriteConsole(
-		handle_out, 
-		"Please enter arguments. For further info, try 'man more'\n", 
-		strlen("Please enter arguments. For further info, try 'man more'\n"),	
-		&dw, 
-		NULL);
+			handle_out,
+			"Please enter arguments. For further info, try 'man more'\n",
+			strlen("Please enter arguments. For further info, try 'man more'\n"),
+			&dw,
+			NULL);
 		return;
-	 }
+	}
 	FILE* fp;
 	errno_t err = fopen_s(&fp, argv[1], "r");
 	if (err) {
 		WriteConsole(handle_out, "Failed to open file\n", strlen("Failed to open file\n"), &dw, NULL);
+		fclose(fp);
 	}
 	CONSOLE_SCREEN_BUFFER_INFO csbi;
-	int conf, flag, count = 0, count_c = 0, size_r, size_c;
-	char tmp;
 	GetConsoleScreenBufferInfo(handle_out, &csbi);
+
+	int conf, flag,
+		count = 0, count_c = 1,
+		size = 1, size_r, size_c, pctg,
+		page_num = 0, offset = 0, index[MAX_PAGENUM];
+	char tmp, fst_char;
+
+	index[page_num] = 0;
+	fst_char = fgetc(fp);
+	while (tmp = fgetc(fp) != EOF) {
+		size++;
+	}
+	fseek(fp, 0, SEEK_SET);
 
 	while (fp) {
 		// get window size
 		size_r = csbi.srWindow.Right - csbi.srWindow.Left + 1;
 		size_c = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
 		count++;
+		offset++;
+
 		tmp = fgetc(fp);
-		if (tmp == EOF) break;
-		// another line
-		else if (tmp == '\n' || count >= size_r) {
-			count_c++;
-			count = 0;
-		}
-		// another page
-		else if (count_c >= size_c) {
-			WriteConsole(handle_out, " --more-- ", strlen(" --more-- "), &dw, NULL);
-			flag = 1;
+		// EOF keyboard response
+		if (tmp == EOF) {
+ 			flag = 1;
 			while (flag) {
 				conf = -1;
 				if (_kbhit()) {
 					conf = _getch();
 				}
 				switch (conf) {
-					case (' '):
-					case ('\r'):
+				case ('b'):
+					if (page_num == 1) break;
+					else if (page_num == 1) {
 						cls(handle_out);
 						count = 0;
 						count_c = 1;
 						flag = 0;
+						fseek(fp, 0, SEEK_SET);
+						offset = index[page_num - 1];
+						page_num--;
 						break;
-
-					case ('q'):
+					}
+					else {
 						cls(handle_out);
-						return;
-
-					default:
+						count = 0;
+						count_c = 1;
+						flag = 0;
+						fseek(fp, index[page_num - 1], SEEK_SET);
+						offset = index[page_num - 1];
+						page_num--;
 						break;
+					}
+
+				case ('q'):
+					cls(handle_out);
+					return;
+
+				default:
+					break;
 				}
 			}
-
+			continue;
 		}
-		putchar(tmp);
+		// another line
+		if (tmp == '\n' || count >= size_r) {
+			count_c++;
+			count = 0;
+		}
+		// another page
+		else if (count_c >= size_c) {
+			page_num++;
+			index[page_num] = offset;
+			pctg = ((double)offset / (double)size) * 100.0;
+			printf(" --MORE %d%%--", pctg);
+			// WriteConsole(handle_out, " --MORE-- ", strlen(" --MORE-- "), &dw, NULL);
+			flag = 1;
+			while (flag) {
+				conf = -1;
+				if (_kbhit()) {
+					conf = _getch();
+				}
+				// keyboard response
+				switch (conf) {
+				case (' '):
+				case ('\r'):
+				cls(handle_out);
+				count = 0;
+				count_c = 1;
+				flag = 0;
+				break;
+
+				case ('b'):
+				if (page_num == 1) break;
+				else if (page_num == 2) {
+					cls(handle_out);
+					count = 0;
+					count_c = 1;
+					flag = 0;
+					fseek(fp, 0, SEEK_SET);
+					offset = index[page_num - 2];
+					page_num -= 2;
+					break;
+				}
+				else {
+					cls(handle_out);
+					count = 0;
+					count_c = 1;
+					flag = 0;
+					fseek(fp, index[page_num - 2], SEEK_SET);
+					offset = index[page_num - 2];
+					page_num -= 2;
+					break;
+				}
+
+				case ('q'):
+				cls(handle_out);
+				return;
+				default:
+				break;
+				}
+			}
+		}
+		if (!offset) {
+			putchar(fst_char);
+		}
+		else {
+			putchar(tmp);
+		}
 		// WriteConsole(handle_out, tmp, strlen(tmp), &dw, NULL);
 	}
 	// cls(handle_out);
