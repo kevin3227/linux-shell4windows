@@ -93,11 +93,11 @@ void more(char* argv[8], int* argc) {
 	// no arguments 
 	if ((*argc) == 0) {
 		WriteConsole(
-			handle_out,
-			"Please enter arguments. For further info, try 'man more'\n",
-			strlen("Please enter arguments. For further info, try 'man more'\n"),
-			&dw,
-			NULL);
+		handle_out,
+		"Please enter arguments. For further info, try 'man more'\n",
+		strlen("Please enter arguments. For further info, try 'man more'\n"),
+		&dw,
+		NULL);
 		return;
 	}
 	FILE* fp;
@@ -140,33 +140,33 @@ void more(char* argv[8], int* argc) {
 				}
 				switch (conf) {
 				case ('b'):
-					if (page_num == 1) {
-						cls(handle_out);
-						count = 0;
-						count_c = 1;
-						flag = 0;
-						fseek(fp, 0, SEEK_SET);
-						offset = index[page_num - 1];
-						page_num--;
-						break;
-					}
-					else {
-						cls(handle_out);
-						count = 0;
-						count_c = 1;
-						flag = 0;
-						fseek(fp, index[page_num - 1], SEEK_SET);
-						offset = index[page_num - 1];
-						page_num--;
-						break;
-					}
+				if (page_num == 1) {
+					cls(handle_out);
+					count = 0;
+					count_c = 1;
+					flag = 0;
+					fseek(fp, 0, SEEK_SET);
+					offset = index[page_num - 1];
+					page_num--;
+					break;
+				}
+				else {
+					cls(handle_out);
+					count = 0;
+					count_c = 1;
+					flag = 0;
+					fseek(fp, index[page_num - 1], SEEK_SET);
+					offset = index[page_num - 1];
+					page_num--;
+					break;
+				}
 
 				case ('q'):
-					cls(handle_out);
-					return;
+				cls(handle_out);
+				return;
 
 				default:
-					break;
+				break;
 				}
 			}
 			continue;
