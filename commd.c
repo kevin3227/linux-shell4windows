@@ -141,24 +141,24 @@ void more(char* argv[8], int* argc) {
 				switch (conf) {
 					case ('b'):
 						if (page_num == 1) {
-						cls(handle_out);
-						count = 0;
-						count_c = 1;
-						flag = 0;
-						fseek(fp, 0, SEEK_SET);
-						offset = index[page_num - 1];
-						page_num--;
-						break;
+							cls(handle_out);
+							count = 0;
+							count_c = 1;
+							flag = 0;
+							fseek(fp, 0, SEEK_SET);
+							offset = index[page_num - 1];
+							page_num--;
+							break;
 						}
 						else {
-						cls(handle_out);
-						count = 0;
-						count_c = 1;
-						flag = 0;
-						fseek(fp, index[page_num - 1], SEEK_SET);
-						offset = index[page_num - 1];
-						page_num--;
-						break;
+							cls(handle_out);
+							count = 0;
+							count_c = 1;
+							flag = 0;
+							fseek(fp, index[page_num - 1], SEEK_SET);
+							offset = index[page_num - 1];
+							page_num--;
+							break;
 						}
 
 					case ('q'):
@@ -212,14 +212,14 @@ void more(char* argv[8], int* argc) {
 							break;
 						}
 						else {
-						cls(handle_out);
-						count = 0;
-						count_c = 1;
-						flag = 0;
-						fseek(fp, index[page_num - 2], SEEK_SET);
-						offset = index[page_num - 2];
-						page_num -= 2;
-						break;
+							cls(handle_out);
+							count = 0;
+							count_c = 1;
+							flag = 0;
+							fseek(fp, index[page_num - 2], SEEK_SET);
+							offset = index[page_num - 2];
+							page_num -= 2;
+							break;
 						}
 
 					case ('q'):
