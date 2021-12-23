@@ -140,8 +140,7 @@ void more(char* argv[8], int* argc) {
 				}
 				switch (conf) {
 				case ('b'):
-					if (page_num == 1) break;
-					else if (page_num == 1) {
+					if (page_num == 1) {
 						cls(handle_out);
 						count = 0;
 						count_c = 1;
