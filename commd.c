@@ -54,7 +54,6 @@ void cls(HANDLE hConsole)
 	{
 		return;
 	}
-
 	dwConSize = csbi.dwSize.X * csbi.dwSize.Y;
 
 	// Fill the entire screen with blanks.
@@ -93,11 +92,11 @@ void more(char* argv[8], int* argc) {
 	// no arguments 
 	if ((*argc) == 0) {
 		WriteConsole(
-		handle_out,
-		"Please enter arguments. For further info, try 'man more'\n",
-		strlen("Please enter arguments. For further info, try 'man more'\n"),
-		&dw,
-		NULL);
+			handle_out,
+			"Please enter arguments. For further info, try 'man more'\n",
+			strlen("Please enter arguments. For further info, try 'man more'\n"),
+			&dw,
+			NULL);
 		return;
 	}
 	FILE* fp;
@@ -123,6 +122,7 @@ void more(char* argv[8], int* argc) {
 	fseek(fp, 0, SEEK_SET);
 
 	while (fp) {
+		flag = 0;
 		// get window size
 		size_r = csbi.srWindow.Right - csbi.srWindow.Left + 1;
 		size_c = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
@@ -131,45 +131,29 @@ void more(char* argv[8], int* argc) {
 
 		tmp = fgetc(fp);
 		// EOF keyboard response
-		if (tmp == EOF) {
- 			flag = 1;
-			while (flag) {
-				conf = -1;
-				if (_kbhit()) {
-					conf = _getch();
-				}
-				switch (conf) {
-					case ('b'):
-						if (page_num == 1) {
-							cls(handle_out);
-							count = 0;
-							count_c = 1;
-							flag = 0;
-							fseek(fp, 0, SEEK_SET);
-							offset = index[page_num - 1];
-							page_num--;
-							break;
-						}
-						else {
-							cls(handle_out);
-							count = 0;
-							count_c = 1;
-							flag = 0;
-							fseek(fp, index[page_num - 1], SEEK_SET);
-							offset = index[page_num - 1];
-							page_num--;
-							break;
-						}
+		flag = 1;
+		while (tmp == EOF && flag == 1) {
+			conf = -1;
+			if (_kbhit()) conf = _getch();
+			switch (conf) {
+			case ('b'):
+				cls(handle_out);
+				count = 0;
+				count_c = 1;
+				flag = -1;
+				if (page_num == 1) fseek(fp, 0, SEEK_SET);
+				else fseek(fp, index[page_num - 1], SEEK_SET);
+				offset = index[page_num - 1];
+				page_num--;
+				break;
 
-					case ('q'):
-						cls(handle_out);
-						return;
+			case ('q'):
+				cls(handle_out);
+				return;
 
-					default:
-						break;
-				}
+			default:
+				break;
 			}
-			continue;
 		}
 		// another line
 		if (tmp == '\n' || count >= size_r) {
@@ -177,60 +161,50 @@ void more(char* argv[8], int* argc) {
 			count = 0;
 		}
 		// another page
-		else if (count_c >= size_c) {
+		if (count_c >= size_c) {
 			page_num++;
 			index[page_num] = offset;
 			pctg = ((double)offset / (double)size) * 100.0;
-			printf(" --MORE %d%%--", pctg);
+			printf("\n --MORE %d%%--", pctg);
 			// WriteConsole(handle_out, " --MORE-- ", strlen(" --MORE-- "), &dw, NULL);
-			flag = 1;
-			while (flag) {
-				conf = -1;
-				if (_kbhit()) {
-					conf = _getch();
-				}
-				// keyboard response
-				switch (conf) {
-					case (' '):
-					case ('\r'):
-						cls(handle_out);
-						count = 0;
-						count_c = 1;
-						flag = 0;
-						break;
+			flag = 2;
+		}
+		while (flag == 2) {
+			conf = -1;
+			if (_kbhit()) {
+				conf = _getch();
+			}
+			// keyboard response
+			switch (conf) {
+			case (' '):
+			case ('\r'):
+				cls(handle_out);
+				count = 0;
+				count_c = 1;
+				flag = -2;
+				break;
 
-					case ('b'):
-						if (page_num == 1) break;
-						else if (page_num == 2) {
-							cls(handle_out);
-							count = 0;
-							count_c = 1;
-							flag = 0;
-							fseek(fp, 0, SEEK_SET);
-							offset = index[page_num - 2];
-							page_num -= 2;
-							break;
-						}
-						else {
-							cls(handle_out);
-							count = 0;
-							count_c = 1;
-							flag = 0;
-							fseek(fp, index[page_num - 2], SEEK_SET);
-							offset = index[page_num - 2];
-							page_num -= 2;
-							break;
-						}
+			case ('b'):
+				if (page_num == 1) break;
+				cls(handle_out);
+				count = 0;
+				count_c = 1;
+				flag = -2;
+				if (page_num == 2) fseek(fp, 0, SEEK_SET);
+				else fseek(fp, index[page_num - 2], SEEK_SET);
+				offset = index[page_num - 2];
+				page_num -= 2;
+				break;
 
-					case ('q'):
-						cls(handle_out);
-						return;
-		
-					default:
-						break;
-				}
+			case ('q'):
+				cls(handle_out);
+				return;
+
+			default:
+				break;
 			}
 		}
+		if (flag == -1 || flag == -2) continue;
 		if (!offset) {
 			putchar(fst_char);
 		}
