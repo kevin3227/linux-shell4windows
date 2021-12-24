@@ -1,10 +1,6 @@
 /* skeleton of the simplified shell */
 
-#include<windows.h>
-
-HANDLE	handle_in;
-HANDLE	handle_out;
-DWORD dw;
+#include"shell.h"
 
 int console();
 void getArgv(char *command, char *argv[8], int *argc);
@@ -35,7 +31,7 @@ int console() {
 		// get command from console input
 		ReadConsole(handle_in, command, 512, &dw, NULL);
 		getArgv(command, argv, argc);
-		if ((*argc)+1 == 0) continue;
+		if ((*argc) + 1 == 0) continue;
 		else if (!strcmp(argv[0], "more")) {
 			more(argv, argc);
 		}

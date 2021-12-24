@@ -1,17 +1,10 @@
 /* implementation of the commands */
 
-#include<windows.h>
-#include<stdio.h>
+#include"shell.h"
 #include<string.h>
 #include<conio.h>
 #include<math.h>
-#define MAX_PAGENUM 128
-
-HANDLE	handle_in;
-HANDLE	handle_out;
-DWORD dw;
-
-// typedef void(*commd)(char* argv[8], int* argc);
+#define MAX_PAGENUM 1024
 
 void getArgv(char *command, char *argv[8], int *argc) {
 	// index for scaning command
