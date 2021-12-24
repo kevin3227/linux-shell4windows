@@ -99,13 +99,12 @@ void more(char* argv[8], int* argc) {
 		fclose(fp);
 	}
 	CONSOLE_SCREEN_BUFFER_INFO csbi;
-	GetConsoleScreenBufferInfo(handle_out, &csbi);
 
 	int conf, flag,
 		count = 0, count_c = 1,
 		size = 1, size_r, size_c, pctg,
 		page_num = 0, offset = 0, index[MAX_PAGENUM];
-	char tmp, fst_char;
+	char tmp, fst_char, tmp_j;
 
 	index[page_num] = 0;
 	fst_char = fgetc(fp);
@@ -117,6 +116,7 @@ void more(char* argv[8], int* argc) {
 	while (fp) {
 		flag = 0;
 		// get window size
+		GetConsoleScreenBufferInfo(handle_out, &csbi);
 		size_r = csbi.srWindow.Right - csbi.srWindow.Left + 1;
 		size_c = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
 		count++;
@@ -134,9 +134,18 @@ void more(char* argv[8], int* argc) {
 				count = 0;
 				count_c = 1;
 				flag = -1;
-				if (page_num == 1) fseek(fp, 0, SEEK_SET);
-				else fseek(fp, index[page_num - 1], SEEK_SET);
-				offset = index[page_num - 1];
+				if (page_num == 1) {
+					fseek(fp, 0, SEEK_SET);
+					offset = 0;
+					page_num--;
+					break;
+				} 
+				offset = index[page_num -1];
+				do {
+					offset++;
+					fseek(fp, offset, SEEK_SET);
+				}
+				while (tmp_j = fgetc(fp) != '\n');
 				page_num--;
 				break;
 
@@ -170,7 +179,6 @@ void more(char* argv[8], int* argc) {
 			// keyboard response
 			switch (conf) {
 			case (' '):
-			case ('\r'):
 				cls(handle_out);
 				count = 0;
 				count_c = 1;
@@ -183,9 +191,17 @@ void more(char* argv[8], int* argc) {
 				count = 0;
 				count_c = 1;
 				flag = -2;
-				if (page_num == 2) fseek(fp, 0, SEEK_SET);
-				else fseek(fp, index[page_num - 2], SEEK_SET);
+				if (page_num == 2) {
+					fseek(fp, 0, SEEK_SET);
+					offset = 0;
+					page_num -= 2;
+					break;
+				}
 				offset = index[page_num - 2];
+				do {
+					offset++;
+					fseek(fp, offset, SEEK_SET); 
+				}while(tmp_j = fgetc(fp) != '\n');
 				page_num -= 2;
 				break;
 
