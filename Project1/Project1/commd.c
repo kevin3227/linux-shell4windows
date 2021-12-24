@@ -103,7 +103,7 @@ void more(char* argv[8], int* argc) {
 	int conf, flag,
 		count = 0, count_c = 1,
 		size = 1, size_r, size_c, pctg,
-		page_num = 0, offset = 0, index[MAX_PAGENUM];
+		page_num = 0, index[MAX_PAGENUM];
 	char tmp, fst_char, tmp_j;
 
 	index[page_num] = 0;
@@ -120,7 +120,6 @@ void more(char* argv[8], int* argc) {
 		size_r = csbi.srWindow.Right - csbi.srWindow.Left + 1;
 		size_c = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
 		count++;
-		offset++;
 
 		tmp = fgetc(fp);
 		// EOF keyboard response
@@ -134,17 +133,8 @@ void more(char* argv[8], int* argc) {
 				count = 0;
 				count_c = 1;
 				flag = -1;
-				if (page_num == 1) {
-					fseek(fp, 0, SEEK_SET);
-					offset = 0;
-					page_num--;
-					break;
-				}
-				offset = index[page_num - 1];
-				do {
-					offset++;
-					fseek(fp, offset, SEEK_SET);
-				} while (tmp_j = fgetc(fp) != '\n');
+				if (page_num == 1) fseek(fp, 0, SEEK_SET);
+				else fseek(fp, index[page_num - 1], SEEK_SET);
 				page_num--;
 				break;
 
@@ -164,8 +154,8 @@ void more(char* argv[8], int* argc) {
 		// another page
 		if (count_c >= size_c) {
 			page_num++;
-			index[page_num] = offset;
-			pctg = ((double)offset / (double)size) * 100.0;
+			index[page_num] = ftell(fp);
+			pctg = ((double)ftell(fp) / (double)size) * 100.0;
 			printf("\n --MORE %d%%--", pctg);
 			// WriteConsole(handle_out, " --MORE-- ", strlen(" --MORE-- "), &dw, NULL);
 			flag = 2;
@@ -184,23 +174,17 @@ void more(char* argv[8], int* argc) {
 				flag = -2;
 				break;
 
+			case ('\r'):
+
+
 			case ('b'):
 				if (page_num == 1) break;
 				cls(handle_out);
 				count = 0;
 				count_c = 1;
 				flag = -2;
-				if (page_num == 2) {
-					fseek(fp, 0, SEEK_SET);
-					offset = 0;
-					page_num -= 2;
-					break;
-				}
-				offset = index[page_num - 2];
-				do {
-					offset++;
-					fseek(fp, offset, SEEK_SET);
-				} while (tmp_j = fgetc(fp) != '\n');
+				if (page_num == 2) fseek(fp, 0, SEEK_SET);
+				else fseek(fp, index[page_num - 2], SEEK_SET);
 				page_num -= 2;
 				break;
 
@@ -213,7 +197,7 @@ void more(char* argv[8], int* argc) {
 			}
 		}
 		if (flag == -1 || flag == -2) continue;
-		if (!offset) {
+		if (!ftell(fp)) {
 			putchar(fst_char);
 		}
 		else {
