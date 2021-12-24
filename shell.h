@@ -1,5 +1,6 @@
-#ifndef SHELL_H
-#define SHELL_H
+#ifndef _SHELL_H_
+#define _SHELL_H_
+
 #include<Windows.h>
 #include<stdio.h>
 
