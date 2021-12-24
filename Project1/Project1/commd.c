@@ -104,7 +104,7 @@ void more(char* argv[8], int* argc) {
 		count = 0, count_c = 1,
 		size = 1, size_r, size_c, pctg,
 		page_num = 0, index[MAX_PAGENUM];
-	char tmp, fst_char, tmp_j;
+	char tmp, fst_char;
 
 	index[page_num] = 0;
 	fst_char = fgetc(fp);
