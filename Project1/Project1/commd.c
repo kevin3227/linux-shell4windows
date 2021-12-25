@@ -11,7 +11,10 @@ void getArgv(char *command, char *argv[8], int *argc) {
 	char *command_index = command;
 
 	// scan command string and split to argv
-	for ((*argc) = 0; (*command_index) != '\n' && (*command_index) != '\r' && (*argc) < 8; (*argc)++) {
+	for ((*argc) = 0; 
+	(*command_index) != '\n' 
+	&& (*command_index) != '\r' 
+	&& (*argc) < 8; (*argc)++) {
 		// get argv
 		int index = 0;
 		// save the split argv
@@ -21,7 +24,11 @@ void getArgv(char *command, char *argv[8], int *argc) {
 			command_index++;
 		}
 		// remove space enter alt
-		while ((*command_index) != ' ' && (*command_index) != '\n' && (*command_index) != '\r' && (*command_index) != '\0') {
+		while (
+		(*command_index) != ' ' 
+		&& (*command_index) != '\n' 
+		&& (*command_index) != '\r' 
+		&& (*command_index) != '\0') {
 			// judge command character and save to the split argv
 			*(argv[(*argc)] + index) = (*command_index);
 			command_index++;
@@ -95,7 +102,11 @@ void more(char* argv[8], int* argc) {
 	FILE* fp;
 	errno_t err = fopen_s(&fp, argv[1], "r");
 	if (err) {
-		WriteConsole(handle_out, "Failed to open file\n", strlen("Failed to open file\n"), &dw, NULL);
+		WriteConsole(handle_out, 
+			"Failed to open file\n", 
+			strlen("Failed to open file\n"), 
+			&dw, 
+			NULL);
 		fclose(fp);
 	}
 	CONSOLE_SCREEN_BUFFER_INFO csbi;
@@ -157,7 +168,6 @@ void more(char* argv[8], int* argc) {
 			index[page_num] = ftell(fp);
 			pctg = ((double)ftell(fp) / (double)size) * 100.0;
 			printf("\n --MORE %d%%--", pctg);
-			// WriteConsole(handle_out, " --MORE-- ", strlen(" --MORE-- "), &dw, NULL);
 			flag = 2;
 		}
 		while (flag == 2) {
@@ -175,7 +185,7 @@ void more(char* argv[8], int* argc) {
 				break;
 
 			case ('\r'):
-
+				/* TODO */
 
 			case ('b'):
 				if (page_num == 1) break;

@@ -31,7 +31,7 @@ int console() {
 		// get command from console input
 		ReadConsole(handle_in, command, 512, &dw, NULL);
 		getArgv(command, argv, argc);
-		if ((*argc) + 1 == 0) continue;
+		if ((*argc) == -1) continue;
 		else if (!strcmp(argv[0], "more")) {
 			more(argv, argc);
 		}
