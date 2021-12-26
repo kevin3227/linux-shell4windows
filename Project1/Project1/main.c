@@ -6,6 +6,7 @@ int console();
 void getArgv(char *command, char *argv[8], int *argc);
 void cls(HANDLE hConsole);
 void more(char* argv[8], int* argc);
+void sort(char* argv[8], int* argc);
 /* TODO */
 
 int console() {
@@ -38,8 +39,11 @@ int console() {
 		else if (!strcmp(argv[0], "sort")) {
 			sort(argv, argc);
 		}
+		// else if (!strcmp(argv[0], "?")) {
+		// TODO
+		// }
 		else {
-			WriteConsole(handle_out, "Command not found", strlen("Command not found"), &dw, NULL);
+			WriteConsole(handle_out, "Command not found\n", strlen("Command not found\n"), &dw, NULL);
 			continue;
 		}
 	}

@@ -123,6 +123,11 @@ void more(char* argv[8], int* argc) {
 	}
 	fseek(fp, 0, SEEK_SET);
 
+	//
+	if (argc == 2) {
+		
+	}
+
 	while (fp) {
 		flag = 0;
 		// get window size
@@ -253,6 +258,7 @@ void sort(char *argv[8], int *argc) {
 	char tmp[MAX_LENGTH];
 	int seq = 0, i;
 
+	// read in line by line
 	while (fp && seq < MAX_LENGTH) {
 		i = 0;
 		lineset[seq].offset = ftell(fp);
@@ -264,10 +270,10 @@ void sort(char *argv[8], int *argc) {
 		if (tmp[i - 1] != '\n') break;
 		seq++;
 	}
+	// sort by first char
 	qsort(lineset, seq + 1, sizeof(line), cmpfunc);
-
+	// print sorted text
 	for (i = 0; i <= seq; ++i) {
-		// printf("%c", lineset[i].fst_char);
 		fseek(fp, lineset[i].offset, SEEK_SET);
 		fgets(tmp, MAX_LENGTH, fp);
 		printf("%s", tmp);
@@ -275,4 +281,7 @@ void sort(char *argv[8], int *argc) {
 	fclose(fp);
 	return 0;
 }
+
+// command ""
+
 /* TODO */

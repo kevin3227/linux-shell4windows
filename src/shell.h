@@ -3,11 +3,17 @@
 
 #include<Windows.h>
 #include<stdio.h>
+#define MAX_PAGENUM 1024
+#define MAX_LENGTH 1024
 
 HANDLE	handle_in;
 HANDLE	handle_out;
 DWORD dw;
 
 // typedef void(*commd)(char* argv[8], int* argc);
+typedef struct {
+	int offset;
+	int fst_char;
+}line;
 
 #endif
