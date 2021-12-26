@@ -35,8 +35,13 @@ int console() {
 		else if (!strcmp(argv[0], "more")) {
 			more(argv, argc);
 		}
-		// else if
-		/* TODO */
+		else if (!strcmp(argv[0], "sort")) {
+			sort(argv, argc);
+		}
+		else {
+			WriteConsole(handle_out, "Command not found", strlen("Command not found"), &dw, NULL);
+			continue;
+		}
 	}
 
 	CloseHandle(handle_out);

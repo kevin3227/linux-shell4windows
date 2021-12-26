@@ -4,7 +4,6 @@
 #include<string.h>
 #include<conio.h>
 #include<math.h>
-#define MAX_PAGENUM 1024
 
 void getArgv(char *command, char *argv[8], int *argc) {
 	// index for scaning command
@@ -107,7 +106,7 @@ void more(char* argv[8], int* argc) {
 			strlen("Failed to open file\n"), 
 			&dw, 
 			NULL);
-		fclose(fp);
+		return;
 	}
 	CONSOLE_SCREEN_BUFFER_INFO csbi;
 
@@ -218,5 +217,62 @@ void more(char* argv[8], int* argc) {
 	// cls(handle_out);
 	fclose(fp);
 	WriteConsole(handle_out, "\n", strlen("\n"), &dw, NULL);
+}
+
+// command "sort"
+int cmpfunc(const void * a, const void * b) {
+	line* line1 = a;
+	line* line2 = b;
+	return (*line1).fst_char - (*line2).fst_char;
+}
+
+void sort(char *argv[8], int *argc) {
+	cls(handle_out);
+	// no arguments 
+	if ((*argc) == 0) {
+		WriteConsole(
+			handle_out,
+			"Please enter arguments. For further info, try 'man sort'\n",
+			strlen("Please enter arguments. For further info, try 'man sort'\n"),
+			&dw,
+			NULL);
+		return;
+	}
+	FILE* fp;
+	errno_t err = fopen_s(&fp, argv[1], "r");
+	if (err) {
+		WriteConsole(handle_out, 
+			"Failed to open file\n", 
+			strlen("Failed to open file\n"), 
+			&dw, 
+			NULL);
+			return;
+	}
+
+	line lineset[MAX_LENGTH];
+	char tmp[MAX_LENGTH];
+	int seq = 0, i;
+
+	while (fp && seq < MAX_LENGTH) {
+		i = 0;
+		lineset[seq].offset = ftell(fp);
+		if(fgets(tmp, MAX_LENGTH, fp));
+		lineset[seq].fst_char = tmp[0];
+		while (tmp[i] != '\0') {
+			i++;
+		}
+		if (tmp[i - 1] != '\n') break;
+		seq++;
+	}
+	qsort(lineset, seq + 1, sizeof(line), cmpfunc);
+
+	for (i = 0; i <= seq; ++i) {
+		// printf("%c", lineset[i].fst_char);
+		fseek(fp, lineset[i].offset, SEEK_SET);
+		fgets(tmp, MAX_LENGTH, fp);
+		printf("%s", tmp);
+	}
+	fclose(fp);
+	return 0;
 }
 /* TODO */
