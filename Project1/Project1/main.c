@@ -1,12 +1,12 @@
 /* skeleton of the simplified shell */
 
 #include"shell.h"
+#include"login.h"
+#include<windows.h>
 
-int console();
-void getArgv(char *command, char *argv[8], int *argc);
-void cls(HANDLE hConsole);
-void more(char* argv[8], int* argc);
-void sort(char* argv[8], int* argc);
+HANDLE	handle_in;
+HANDLE	handle_out;
+DWORD dw;
 /* TODO */
 
 int console() {
@@ -55,6 +55,14 @@ int console() {
 }
 
 int main() {
-	console();
+	if (!login()) {
+		WriteConsole(handle_out, "\nLOGIN SUCCEED\n", strlen("\nLOGIN SUCCEED\n"), &dw, NULL);
+	}
+	system("pause");
+
+	//CloseHandle(handle_in);
+	//CloseHandle(handle_out);
+
+	//console();
 	return 0;
 }
