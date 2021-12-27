@@ -26,10 +26,10 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="shell.h">
+    <ClInclude Include="login.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="login.h">
+    <ClInclude Include="commd.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

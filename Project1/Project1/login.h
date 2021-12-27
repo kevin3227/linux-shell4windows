@@ -1,9 +1,5 @@
 #include <windows.h>
-#include "shell.h"
-
-extern HANDLE handle_in;
-extern HANDLE handle_out;
-extern DWORD dw;
+#include "commd.h"
 
 struct passwd
 {

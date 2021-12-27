@@ -97,7 +97,7 @@ BOOL login()
             }
         }
     }
-    WriteConsole(handle_out, "\nWRONG USER NAME!\n exit \n", strlen("\nWRONG USER NAME!\n exit \n"), &dw, NULL);
+    WriteConsole(handle_out, "\nWRONG USER NAME!\nexit\n", strlen("\nWRONG USER NAME!\nexit\n"), &dw, NULL);
     free(pswbuff);
     free(usrbuff);
     return 1;

@@ -1,21 +1,13 @@
 ﻿  commd.c
-d:\mygit\linux-shell4windows\project1\project1\shell.h(8): warning C4005: “MAX_PAGENUM”: 宏重定义
-  d:\mygit\linux-shell4windows\project1\project1\shell.h(6): note: 参见“MAX_PAGENUM”的前一个定义
-d:\mygit\linux-shell4windows\project1\project1\commd.c(127): warning C4047: “==”:“int *”与“int”的间接级别不同
-d:\mygit\linux-shell4windows\project1\project1\commd.c(173): warning C4244: “=”: 从“double”转换到“int”，可能丢失数据
-d:\mygit\linux-shell4windows\project1\project1\commd.c(229): warning C4090: “初始化”: 不同的“const”限定符
-d:\mygit\linux-shell4windows\project1\project1\commd.c(230): warning C4090: “初始化”: 不同的“const”限定符
-d:\mygit\linux-shell4windows\project1\project1\commd.c(282): warning C4098: “sort”:“void”函数返回值
+e:\zk_c\cs\repo\linux-shell4windows\project1\project1\commd.c(173): warning C4244: “=”: 从“double”转换到“int”，可能丢失数据
+e:\zk_c\cs\repo\linux-shell4windows\project1\project1\commd.c(229): warning C4090: “初始化”: 不同的“const”限定符
+e:\zk_c\cs\repo\linux-shell4windows\project1\project1\commd.c(230): warning C4090: “初始化”: 不同的“const”限定符
   login.c
-d:\mygit\linux-shell4windows\project1\project1\shell.h(8): warning C4005: “MAX_PAGENUM”: 宏重定义
-  d:\mygit\linux-shell4windows\project1\project1\shell.h(6): note: 参见“MAX_PAGENUM”的前一个定义
-d:\mygit\linux-shell4windows\project1\project1\login.c(44): warning C4047: “初始化”:“DWORD”与“void *”的间接级别不同
-d:\mygit\linux-shell4windows\project1\project1\login.c(123): warning C4142: "dget_inputlenth": 类型的良性重定义
-  d:\mygit\linux-shell4windows\project1\project1\login.h(31): note: 参见“dget_inputlenth”的声明
+e:\zk_c\cs\repo\linux-shell4windows\project1\project1\login.c(44): warning C4047: “初始化”:“DWORD”与“void *”的间接级别不同
+e:\zk_c\cs\repo\linux-shell4windows\project1\project1\login.c(123): warning C4142: "dget_inputlenth": 类型的良性重定义
+  e:\zk_c\cs\repo\linux-shell4windows\project1\project1\login.h(27): note: 参见“dget_inputlenth”的声明
   main.c
-d:\mygit\linux-shell4windows\project1\project1\shell.h(8): warning C4005: “MAX_PAGENUM”: 宏重定义
-  d:\mygit\linux-shell4windows\project1\project1\shell.h(6): note: 参见“MAX_PAGENUM”的前一个定义
   正在生成代码
-  All 7 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  All 15 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
   已完成代码的生成
-  Project1.vcxproj -> D:\MyGit\linux-shell4windows\Project1\Release\Project1.exe
+  Project1.vcxproj -> E:\Zk_C\CS\Repo\linux-shell4windows\Project1\Release\Project1.exe

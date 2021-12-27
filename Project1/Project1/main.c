@@ -1,13 +1,12 @@
 /* skeleton of the simplified shell */
 
-#include"shell.h"
+#include"commd.h"
 #include"login.h"
 #include<windows.h>
 
-HANDLE	handle_in;
-HANDLE	handle_out;
-DWORD dw;
-/* TODO */
+extern HANDLE handle_in;
+extern HANDLE handle_out;
+extern DWORD dw;
 
 int console() {
 	// I/O handle Windows API
@@ -57,12 +56,11 @@ int console() {
 int main() {
 	if (!login()) {
 		WriteConsole(handle_out, "\nLOGIN SUCCEED\n", strlen("\nLOGIN SUCCEED\n"), &dw, NULL);
+		console();
 	}
-	system("pause");
 
 	//CloseHandle(handle_in);
 	//CloseHandle(handle_out);
 
-	//console();
 	return 0;
 }

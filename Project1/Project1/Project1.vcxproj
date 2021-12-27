@@ -128,8 +128,8 @@
     <ClCompile Include="main.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="commd.h" />
     <ClInclude Include="login.h" />
-    <ClInclude Include="shell.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="test.txt" />
