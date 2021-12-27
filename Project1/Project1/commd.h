@@ -2,7 +2,9 @@
 #define _SHELL_H_
 
 #include<Windows.h>
-#include<stdio.h>
+#include<fileapi.h>
+#include<tchar.h>
+// #include<stdio.h>
 #define MAX_PAGENUM 1024
 #define MAX_LENGTH 1024
 
