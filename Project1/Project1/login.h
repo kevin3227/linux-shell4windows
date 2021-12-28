@@ -2,7 +2,7 @@
 #define _LOGIN_H_
 
 #include <windows.h>
-#include "shell.h"
+#include "commd.h"
 
 extern HANDLE handle_in;
 extern HANDLE handle_out;
@@ -19,6 +19,7 @@ struct passwd
 struct login_context
 {
     struct passwd *pwd; /* user info */
+    char *uid;
     DWORD pid;
 };
 
@@ -29,9 +30,12 @@ void password();
 //command "logout"
 void logout();
 
-DWORD LoginInitial(struct login_context *cxt);
+DWORD Login_initial(struct login_context *cxt);
 DWORD dget_inputlenth(char *inputbuff);
-BOOL bget_usr(char *usrbuff, struct passwd *pw);
+BOOL bget_usr(char *usrbuff, struct login_context *cxt);
 BOOL icheck_psw(char *pswbuff, struct passwd *pw);
+char *HashMD5(char *data, DWORD *result);
+BOOL bfile_init();
+BOOL bcpstring(char *source_str, char *taget_str, int lenth);
 
 #endif

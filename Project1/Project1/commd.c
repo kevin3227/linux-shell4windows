@@ -1,33 +1,32 @@
 /* implementation of the commands */
 
-#include"shell.h"
-#include<string.h>
-#include<conio.h>
-#include<math.h>
+#include "commd.h"
+#include <string.h>
+#include <conio.h>
+#include <math.h>
 
-void getArgv(char *command, char *argv[8], int *argc) {
+void getArgv(char *command, char *argv[8], int *argc)
+{
 	// index for scaning command
 	char *command_index = command;
 
 	// scan command string and split to argv
-	for ((*argc) = 0; 
-	(*command_index) != '\n' 
-	&& (*command_index) != '\r' 
-	&& (*argc) < 8; (*argc)++) {
+	for ((*argc) = 0;
+		 (*command_index) != '\n' && (*command_index) != '\r' && (*argc) < 8; (*argc)++)
+	{
 		// get argv
 		int index = 0;
 		// save the split argv
-		argv[(*argc)] = (char*)malloc(sizeof(char) * 64);
+		argv[(*argc)] = (char *)malloc(sizeof(char) * 64);
 		// if character is space or enter or alt than move
-		while ((*command_index) == ' ') {
+		while ((*command_index) == ' ')
+		{
 			command_index++;
 		}
 		// remove space enter alt
 		while (
-		(*command_index) != ' ' 
-		&& (*command_index) != '\n' 
-		&& (*command_index) != '\r' 
-		&& (*command_index) != '\0') {
+			(*command_index) != ' ' && (*command_index) != '\n' && (*command_index) != '\r' && (*command_index) != '\0')
+		{
 			// judge command character and save to the split argv
 			*(argv[(*argc)] + index) = (*command_index);
 			command_index++;
@@ -38,12 +37,11 @@ void getArgv(char *command, char *argv[8], int *argc) {
 	}
 	argv[*(argc)] = '\0';
 	(*argc)--;
-
 }
 //clear the screenbuffer
 void cls(HANDLE hConsole)
 {
-	COORD coordScreen = { 0, 0 };    // home for the cursor
+	COORD coordScreen = {0, 0}; // home for the cursor
 	DWORD cCharsWritten;
 	CONSOLE_SCREEN_BUFFER_INFO csbi;
 	DWORD dwConSize;
@@ -56,11 +54,11 @@ void cls(HANDLE hConsole)
 	dwConSize = csbi.dwSize.X * csbi.dwSize.Y;
 
 	// Fill the entire screen with blanks.
-	if (!FillConsoleOutputCharacter(hConsole,        // Handle to console screen buffer
-		(TCHAR)' ',      // Character to write to the buffer
-		dwConSize,       // Number of cells to write
-		coordScreen,     // Coordinates of first cell
-		&cCharsWritten)) // Receive number of characters written
+	if (!FillConsoleOutputCharacter(hConsole,		 // Handle to console screen buffer
+									(TCHAR)' ',		 // Character to write to the buffer
+									dwConSize,		 // Number of cells to write
+									coordScreen,	 // Coordinates of first cell
+									&cCharsWritten)) // Receive number of characters written
 	{
 		return;
 	}
@@ -72,11 +70,11 @@ void cls(HANDLE hConsole)
 	}
 
 	// Set the buffer's attributes accordingly.
-	if (!FillConsoleOutputAttribute(hConsole,         // Handle to console screen buffer
-		csbi.wAttributes, // Character attributes to use
-		dwConSize,        // Number of cells to set attribute
-		coordScreen,      // Coordinates of first cell
-		&cCharsWritten))  // Receive number of characters written
+	if (!FillConsoleOutputAttribute(hConsole,		  // Handle to console screen buffer
+									csbi.wAttributes, // Character attributes to use
+									dwConSize,		  // Number of cells to set attribute
+									coordScreen,	  // Coordinates of first cell
+									&cCharsWritten))  // Receive number of characters written
 	{
 		return;
 	}
@@ -86,10 +84,12 @@ void cls(HANDLE hConsole)
 }
 
 //command "more"
-void more(char* argv[8], int* argc) {
+void more(char *argv[8], int *argc)
+{
 	cls(handle_out);
-	// no arguments 
-	if ((*argc) == 0) {
+	// no arguments
+	if ((*argc) == 0)
+	{
 		WriteConsole(
 			handle_out,
 			"Please enter arguments. For further info, try 'man more'\n",
@@ -98,14 +98,15 @@ void more(char* argv[8], int* argc) {
 			NULL);
 		return;
 	}
-	FILE* fp;
+	FILE *fp;
 	errno_t err = fopen_s(&fp, argv[1], "r");
-	if (err) {
-		WriteConsole(handle_out, 
-			"Failed to open file\n", 
-			strlen("Failed to open file\n"), 
-			&dw, 
-			NULL);
+	if (err)
+	{
+		WriteConsole(handle_out,
+					 "Failed to open file\n",
+					 strlen("Failed to open file\n"),
+					 &dw,
+					 NULL);
 		return;
 	}
 	CONSOLE_SCREEN_BUFFER_INFO csbi;
@@ -118,17 +119,19 @@ void more(char* argv[8], int* argc) {
 
 	index[page_num] = 0;
 	fst_char = fgetc(fp);
-	while (tmp = fgetc(fp) != EOF) {
+	while (tmp = fgetc(fp) != EOF)
+	{
 		size++;
 	}
 	fseek(fp, 0, SEEK_SET);
 
 	//
-	if (argc == 2) {
-		
+	if (argc == 2)
+	{
 	}
 
-	while (fp) {
+	while (fp)
+	{
 		flag = 0;
 		// get window size
 		GetConsoleScreenBufferInfo(handle_out, &csbi);
@@ -139,17 +142,22 @@ void more(char* argv[8], int* argc) {
 		tmp = fgetc(fp);
 		// EOF keyboard response
 		flag = 1;
-		while (tmp == EOF && flag == 1) {
+		while (tmp == EOF && flag == 1)
+		{
 			conf = -1;
-			if (_kbhit()) conf = _getch();
-			switch (conf) {
+			if (_kbhit())
+				conf = _getch();
+			switch (conf)
+			{
 			case ('b'):
 				cls(handle_out);
 				count = 0;
 				count_c = 1;
 				flag = -1;
-				if (page_num == 1) fseek(fp, 0, SEEK_SET);
-				else fseek(fp, index[page_num - 1], SEEK_SET);
+				if (page_num == 1)
+					fseek(fp, 0, SEEK_SET);
+				else
+					fseek(fp, index[page_num - 1], SEEK_SET);
 				page_num--;
 				break;
 
@@ -162,25 +170,30 @@ void more(char* argv[8], int* argc) {
 			}
 		}
 		// another line
-		if (tmp == '\n' || count >= size_r) {
+		if (tmp == '\n' || count >= size_r)
+		{
 			count_c++;
 			count = 0;
 		}
 		// another page
-		if (count_c >= size_c) {
+		if (count_c >= size_c)
+		{
 			page_num++;
 			index[page_num] = ftell(fp);
 			pctg = ((double)ftell(fp) / (double)size) * 100.0;
 			printf("\n --MORE %d%%--", pctg);
 			flag = 2;
 		}
-		while (flag == 2) {
+		while (flag == 2)
+		{
 			conf = -1;
-			if (_kbhit()) {
+			if (_kbhit())
+			{
 				conf = _getch();
 			}
 			// keyboard response
-			switch (conf) {
+			switch (conf)
+			{
 			case (' '):
 				cls(handle_out);
 				count = 0;
@@ -192,13 +205,16 @@ void more(char* argv[8], int* argc) {
 				/* TODO */
 
 			case ('b'):
-				if (page_num == 1) break;
+				if (page_num == 1)
+					break;
 				cls(handle_out);
 				count = 0;
 				count_c = 1;
 				flag = -2;
-				if (page_num == 2) fseek(fp, 0, SEEK_SET);
-				else fseek(fp, index[page_num - 2], SEEK_SET);
+				if (page_num == 2)
+					fseek(fp, 0, SEEK_SET);
+				else
+					fseek(fp, index[page_num - 2], SEEK_SET);
 				page_num -= 2;
 				break;
 
@@ -210,11 +226,14 @@ void more(char* argv[8], int* argc) {
 				break;
 			}
 		}
-		if (flag == -1 || flag == -2) continue;
-		if (!ftell(fp)) {
+		if (flag == -1 || flag == -2)
+			continue;
+		if (!ftell(fp))
+		{
 			putchar(fst_char);
 		}
-		else {
+		else
+		{
 			putchar(tmp);
 		}
 		// WriteConsole(handle_out, tmp, strlen(tmp), &dw, NULL);
@@ -225,16 +244,19 @@ void more(char* argv[8], int* argc) {
 }
 
 // command "sort"
-int cmpfunc(const void * a, const void * b) {
-	line* line1 = a;
-	line* line2 = b;
+int cmpfunc(const void *a, const void *b)
+{
+	line *line1 = a;
+	line *line2 = b;
 	return (*line1).fst_char - (*line2).fst_char;
 }
 
-void sort(char *argv[8], int *argc) {
+void sort(char *argv[8], int *argc)
+{
 	cls(handle_out);
-	// no arguments 
-	if ((*argc) == 0) {
+	// no arguments
+	if ((*argc) == 0)
+	{
 		WriteConsole(
 			handle_out,
 			"Please enter arguments. For further info, try 'man sort'\n",
@@ -243,15 +265,16 @@ void sort(char *argv[8], int *argc) {
 			NULL);
 		return;
 	}
-	FILE* fp;
+	FILE *fp;
 	errno_t err = fopen_s(&fp, argv[1], "r");
-	if (err) {
-		WriteConsole(handle_out, 
-			"Failed to open file\n", 
-			strlen("Failed to open file\n"), 
-			&dw, 
-			NULL);
-			return;
+	if (err)
+	{
+		WriteConsole(handle_out,
+					 "Failed to open file\n",
+					 strlen("Failed to open file\n"),
+					 &dw,
+					 NULL);
+		return;
 	}
 
 	line lineset[MAX_LENGTH];
@@ -259,21 +282,26 @@ void sort(char *argv[8], int *argc) {
 	int seq = 0, i;
 
 	// read in line by line
-	while (fp && seq < MAX_LENGTH) {
+	while (fp && seq < MAX_LENGTH)
+	{
 		i = 0;
 		lineset[seq].offset = ftell(fp);
-		if(fgets(tmp, MAX_LENGTH, fp));
+		if (fgets(tmp, MAX_LENGTH, fp))
+			;
 		lineset[seq].fst_char = tmp[0];
-		while (tmp[i] != '\0') {
+		while (tmp[i] != '\0')
+		{
 			i++;
 		}
-		if (tmp[i - 1] != '\n') break;
+		if (tmp[i - 1] != '\n')
+			break;
 		seq++;
 	}
 	// sort by first char
 	qsort(lineset, seq + 1, sizeof(line), cmpfunc);
 	// print sorted text
-	for (i = 0; i <= seq; ++i) {
+	for (i = 0; i <= seq; ++i)
+	{
 		fseek(fp, lineset[i].offset, SEEK_SET);
 		fgets(tmp, MAX_LENGTH, fp);
 		printf("%s", tmp);

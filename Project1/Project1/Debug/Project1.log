@@ -1,11 +1,17 @@
 ﻿  commd.c
-e:\zk_c\cs\repo\linux-shell4windows\project1\project1\commd.c(177): warning C4244: “=”: 从“double”转换到“int”，可能丢失数据
-e:\zk_c\cs\repo\linux-shell4windows\project1\project1\commd.c(233): warning C4090: “初始化”: 不同的“const”限定符
-e:\zk_c\cs\repo\linux-shell4windows\project1\project1\commd.c(234): warning C4090: “初始化”: 不同的“const”限定符
+d:\mygit\linux-shell4windows\project1\project1\commd.c(129): warning C4047: “==”:“int *”与“int”的间接级别不同
+d:\mygit\linux-shell4windows\project1\project1\commd.c(183): warning C4244: “=”: 从“double”转换到“int”，可能丢失数据
+d:\mygit\linux-shell4windows\project1\project1\commd.c(249): warning C4090: “初始化”: 不同的“const”限定符
+d:\mygit\linux-shell4windows\project1\project1\commd.c(250): warning C4090: “初始化”: 不同的“const”限定符
+d:\mygit\linux-shell4windows\project1\project1\commd.c(310): warning C4098: “sort”:“void”函数返回值
   login.c
-e:\zk_c\cs\repo\linux-shell4windows\project1\project1\login.c(44): warning C4047: “初始化”:“DWORD”与“void *”的间接级别不同
-e:\zk_c\cs\repo\linux-shell4windows\project1\project1\login.c(123): warning C4142: "dget_inputlenth": 类型的良性重定义
-  e:\zk_c\cs\repo\linux-shell4windows\project1\project1\login.h(27): note: 参见“dget_inputlenth”的声明
-  main.c
+d:\mygit\linux-shell4windows\project1\project1\login.c(25): warning C4013: “logininitial”未定义；假设外部返回 int
+d:\mygit\linux-shell4windows\project1\project1\login.c(27): warning C4013: “getlasterror”未定义；假设外部返回 int
+d:\mygit\linux-shell4windows\project1\project1\login.c(212): warning C4013: “bfile_init”未定义；假设外部返回 int
+d:\mygit\linux-shell4windows\project1\project1\login.c(241): warning C4013: “bcpstring”未定义；假设外部返回 int
+d:\mygit\linux-shell4windows\project1\project1\login.c(391): warning C4018: “<”: 有符号/无符号不匹配
   正在生成代码...
-  Project1.vcxproj -> E:\Zk_C\CS\Repo\linux-shell4windows\Project1\Debug\Project1.exe
+  main.c
+login.obj : error LNK2019: 无法解析的外部符号 _logininitial，该符号在函数 _login 中被引用
+login.obj : error LNK2019: 无法解析的外部符号 _getlasterror，该符号在函数 _login 中被引用
+D:\MyGit\linux-shell4windows\Project1\Debug\main.exe : fatal error LNK1120: 2 个无法解析的外部命令
