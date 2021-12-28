@@ -1,13 +1,9 @@
 /* implementation of the commands */
 
-#include"commd.h"
+#include"shell.h"
 #include<string.h>
 #include<conio.h>
 #include<math.h>
-
-extern HANDLE handle_in;
-extern HANDLE handle_out;
-extern DWORD dw;
 
 void getArgv(char *command, char *argv[8], int *argc) {
 	// index for scaning command
@@ -128,7 +124,7 @@ void more(char* argv[8], int* argc) {
 	fseek(fp, 0, SEEK_SET);
 
 	//
-	if ((*argc) == 2) {
+	if (argc == 2) {
 		
 	}
 
@@ -283,6 +279,7 @@ void sort(char *argv[8], int *argc) {
 		printf("%s", tmp);
 	}
 	fclose(fp);
+	return 0;
 }
 
 // command ""

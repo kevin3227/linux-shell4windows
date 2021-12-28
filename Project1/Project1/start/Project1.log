@@ -1,0 +1,11 @@
+﻿  commd.c
+d:\mygit\linux-shell4windows\project1\project1\commd.c(127): warning C4047: “==”:“int *”与“int”的间接级别不同
+d:\mygit\linux-shell4windows\project1\project1\commd.c(173): warning C4244: “=”: 从“double”转换到“int”，可能丢失数据
+d:\mygit\linux-shell4windows\project1\project1\commd.c(229): warning C4090: “初始化”: 不同的“const”限定符
+d:\mygit\linux-shell4windows\project1\project1\commd.c(230): warning C4090: “初始化”: 不同的“const”限定符
+d:\mygit\linux-shell4windows\project1\project1\commd.c(282): warning C4098: “sort”:“void”函数返回值
+  login.c
+  main.c
+  start.c
+main.obj : error LNK2005: _main 已经在 main.obj 中定义
+D:\MyGit\linux-shell4windows\Project1\start\main.exe : fatal error LNK1169: 找到一个或多个多重定义的符号
