@@ -213,14 +213,14 @@ BOOL bget_usr(char *usrbuff, struct login_context *cxt)
 	{
 		return 1;
 	}
-	DWORD dwBytesRead = 0;                             //actual lenth of readbytes
-	BOOL bContinue = TRUE;                             //read file control sign
-	OVERLAPPED stOverlapped = { 0 };                     //read file info(offset)
-	stOverlapped.hEvent = hEvent;                      //read event
-	char *rbuff = (char *)malloc(1);                   //a char buffer read from file
-	DWORD dwFileSize = GetFileSize(hFile, NULL);       //get file size
+	DWORD dwBytesRead = 0;							   //actual lenth of readbytes
+	BOOL bContinue = TRUE;							   //read file control sign
+	OVERLAPPED stOverlapped = {0};					   //read file info(offset)
+	stOverlapped.hEvent = hEvent;					   //read event
+	char *rbuff = (char *)malloc(1);				   //a char buffer read from file
+	DWORD dwFileSize = GetFileSize(hFile, NULL);	   //get file size
 	char *tmpbuff = (char *)malloc(sizeof(char) * 48); //a string buffer from file
-	int count = 0, tmpcount = 0;                       // read buffer offset
+	int count = 0, tmpcount = 0;					   // read buffer offset
 
 	while (bContinue)
 	{
@@ -293,52 +293,6 @@ BOOL bget_usr(char *usrbuff, struct login_context *cxt)
 				count = 0;
 			}
 		}
-
-		// if (*rbuff == ' ')
-		// {
-		//     tmpbuff[--count] = '\0';
-		//     pw->lenth_name = count;
-		//     while (count && count < 32)
-		//     {
-		//         count--;
-		//         pw->pw_name[count] = tmpbuff[count];
-		//     }
-		//     pw->pw_name[pw->lenth_name] = '\0';
-		//     // WriteConsole(handle_out, pw->pw_name, strlen(pw->pw_name), &dw, NULL);
-		// }
-		// else if (*rbuff == '\r')
-		// {
-		//     tmpbuff[--count] = '\0';
-		//     pw->lenth_passwd = count;
-		//     while (count && count < 32)
-		//     {
-		//         count--;
-		//         pw->pw_passwd[count] = tmpbuff[count];
-		//     }
-		//     pw->pw_passwd[pw->lenth_passwd] = '\0';
-		//     // WriteConsole(handle_out, pw->pw_passwd, strlen(pw->pw_passwd), &dw, NULL);
-		// }
-		// else if (*rbuff == '\n')
-		// {
-		//     //check usrbuff ?= pw->pw_name
-		//     DWORD input_lenth = 0;
-		//     int tmpc = 0;
-		//     input_lenth = dget_inputlenth(usrbuff);
-		//     if (input_lenth == pw->lenth_name)
-		//     {
-		//         while (usrbuff[tmpc] == pw->pw_name[tmpc] && tmpc != input_lenth)
-		//         {
-		//             tmpc++;
-		//         }
-		//         if (pw->lenth_name == tmpc)
-		//         {
-		//             CloseHandle(hFile);
-		//             CloseHandle(hEvent);
-		//             return 0;
-		//         }
-		//     }
-		//     count = 0;
-		// }
 
 		stOverlapped.Offset = stOverlapped.Offset + dwBytesRead;
 		if (stOverlapped.Offset < dwFileSize)
