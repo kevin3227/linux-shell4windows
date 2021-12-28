@@ -15,6 +15,7 @@ int main(int argc, TCHAR *argv[])
         WriteConsole(handle_out, "\nLOGIN FAILED\n", strlen("\nLOGIN FAILED\n"), &dw, NULL);
         return 0;
     }
+	cls(handle_out);
     // WriteConsole(handle_out, "\nLOGIN SUCCESS\n", strlen("\nLOGIN SUCCESS\n"), &dw, NULL);
     // CloseHandle(handle_in);
     // CloseHandle(handle_out);

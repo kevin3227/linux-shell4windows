@@ -10,17 +10,17 @@ extern DWORD dw;
 
 struct passwd
 {
-    char *pw_name; /* Username. */
-    DWORD lenth_name;
-    char *pw_passwd; /* Password. */
-    DWORD lenth_passwd;
+	char *pw_name; /* Username. */
+	DWORD lenth_name;
+	char *pw_passwd; /* Password. */
+	DWORD lenth_passwd;
 };
 
 struct login_context
 {
-    struct passwd *pwd; /* user info */
-    char *uid;
-    DWORD pid;
+	struct passwd *pwd; /* user info */
+	char *uid;
+	DWORD pid;
 };
 
 //command "login"
@@ -35,7 +35,7 @@ DWORD dget_inputlenth(char *inputbuff);
 BOOL bget_usr(char *usrbuff, struct login_context *cxt);
 BOOL icheck_psw(char *pswbuff, struct passwd *pw);
 char *HashMD5(char *data, DWORD *result);
-BOOL bfile_init();
 BOOL bcpstring(char *source_str, char *taget_str, int lenth);
+BOOL bfile_init();
 
 #endif

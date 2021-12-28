@@ -1,0 +1,4 @@
+root:123456:0
+vnid:vnid:1
+txqq 000000:2
+

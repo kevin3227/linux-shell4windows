@@ -42,7 +42,6 @@ BOOL login(struct login_context *cxt)
 			WriteConsole(handle_out, "password: ", strlen("password: "), &dw, NULL);
 
 			// set console input disable echo mode
-
 			iMode = oldIMode;
 			iMode &= ~ENABLE_ECHO_INPUT;
 			if (!SetConsoleMode(handle_in, iMode))
@@ -52,9 +51,9 @@ BOOL login(struct login_context *cxt)
 
 			//get passowrd
 			ReadConsole(handle_in, pswbuff, 32, &dw, NULL);
+			pswbuff[dget_inputlenth(pswbuff)] = '\0';
 
 			//reset input_mode
-
 			if (!SetConsoleMode(handle_in, oldIMode))
 			{
 				return GetLastError();
@@ -177,25 +176,30 @@ DWORD Login_initial(struct login_context *cxt)
 	check password is right.
 	usrbuff: password to be check
 	pw: saved user infomation
-
-	there's a bug to be fixed !!!!!
 */
 
 BOOL icheck_psw(char *pswbuff, struct passwd *pw)
 {
 
-	DWORD lenth = 0;
+	DWORD lenth = 0, result;
 	int count = 0;
-	lenth = dget_inputlenth(pswbuff);
-	if (lenth == pw->lenth_passwd)
+	char *pswhash;
+
+	pswhash = HashMD5(pswbuff, &result);
+	if (result && pw->lenth_passwd != 32)
 	{
-		while (pswbuff[count] == pw->pw_passwd[count] && count != lenth)
+		WriteConsole(handle_out, "\n PASSWORD WRONG! \n", strlen("\n PASSWORD WRONG! \n"), &dw, NULL);
+		return result;
+	}
+	else
+	{
+		while (pswhash[count] == pw->pw_passwd[count] && count < pw->lenth_passwd)
 		{
 			count++;
 		}
-		if (pw->lenth_passwd == count)
+		if (count == 32)
 		{
-			//WriteConsole(handle_out, "\nCHECK PASSWORD SUCCEED!\n", strlen("\nCHECK PASSWORD SUCCEED!\n"), &dw, NULL);
+			// WriteConsole(handle_out, "\nCHECK PASSWORD SUCCEED!\n", strlen("\nCHECK PASSWORD SUCCEED!\n"), &dw, NULL);
 			return 1;
 		}
 	}
@@ -213,14 +217,14 @@ BOOL bget_usr(char *usrbuff, struct login_context *cxt)
 	{
 		return 1;
 	}
-	DWORD dwBytesRead = 0;							   //actual lenth of readbytes
-	BOOL bContinue = TRUE;							   //read file control sign
-	OVERLAPPED stOverlapped = {0};					   //read file info(offset)
-	stOverlapped.hEvent = hEvent;					   //read event
-	char *rbuff = (char *)malloc(1);				   //a char buffer read from file
-	DWORD dwFileSize = GetFileSize(hFile, NULL);	   //get file size
+	DWORD dwBytesRead = 0;                             //actual lenth of readbytes
+	BOOL bContinue = TRUE;                             //read file control sign
+	OVERLAPPED stOverlapped = { 0 };                     //read file info(offset)
+	stOverlapped.hEvent = hEvent;                      //read event
+	char *rbuff = (char *)malloc(1);                   //a char buffer read from file
+	DWORD dwFileSize = GetFileSize(hFile, NULL);       //get file size
 	char *tmpbuff = (char *)malloc(sizeof(char) * 48); //a string buffer from file
-	int count = 0, tmpcount = 0;					   // read buffer offset
+	int count = 0, tmpcount = 0;                       // read buffer offset
 
 	while (bContinue)
 	{
@@ -305,6 +309,10 @@ BOOL bget_usr(char *usrbuff, struct login_context *cxt)
 	return 1;
 }
 
+/*
+	a hash function to hash a string
+	return a hashstring
+*/
 char *HashMD5(char *data, DWORD *result)
 {
 	DWORD dwStatus = 0;
