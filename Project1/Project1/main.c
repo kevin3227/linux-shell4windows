@@ -62,8 +62,15 @@ int console()
     return 0;
 }
 
-int main()
+int main(int argc, char *argv[])
 {
+	//test commandline arguments, value: uid to specific user
+
+	handle_out = GetStdHandle(STD_OUTPUT_HANDLE);
+	char *out = GetCommandLineA();
+	WriteConsole(handle_out, out, strlen(out), &dw, NULL);
+	WriteConsole(handle_out, '\n', 1, &dw, NULL);
+
     console();
     return 0;
 }

@@ -27,8 +27,8 @@ int main(int argc, TCHAR *argv[])
     ZeroMemory(&pi, sizeof(pi));
 
     // Start the child process.
-    if (!CreateProcess(NULL,          // No module name (use command line)
-                       ".\\main.exe", // Command line
+    if (!CreateProcess("main.exe",          // No module name (use command line)
+                       cxt.uid, // Command line
                        NULL,          // Process handle not inheritable
                        NULL,          // Thread handle not inheritable
                        FALSE,         // Set handle inheritance to FALSE
