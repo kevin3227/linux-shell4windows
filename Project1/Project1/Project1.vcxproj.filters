@@ -24,9 +24,6 @@
     <ClCompile Include="login.c">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="start.c">
-      <Filter>源文件</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="login.h">
