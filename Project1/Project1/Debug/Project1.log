@@ -1,5 +1,2 @@
-﻿  commd.c
-e:\zk_c\cs\repo\linux-shell4windows\project1\project1\commd.c(151): warning C4013: “_kbhit”未定义；假设外部返回 int
-e:\zk_c\cs\repo\linux-shell4windows\project1\project1\commd.c(151): warning C4013: “_getch”未定义；假设外部返回 int
-e:\zk_c\cs\repo\linux-shell4windows\project1\project1\commd.c(187): warning C4244: “=”: 从“double”转换到“int”，可能丢失数据
+﻿  main.c
   Project1.vcxproj -> E:\Zk_C\CS\Repo\linux-shell4windows\Project1\Debug\Project1.exe

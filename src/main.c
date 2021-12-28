@@ -59,8 +59,8 @@ int main() {
 		console();
 	}
 
-	//CloseHandle(handle_in);
-	//CloseHandle(handle_out);
+	CloseHandle(handle_in);
+	CloseHandle(handle_out);
 
 	return 0;
 }

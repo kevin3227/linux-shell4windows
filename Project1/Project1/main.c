@@ -35,9 +35,9 @@ int console() {
 		else if (!strcmp(argv[0], "more")) {
 			more(argv, argc);
 		}
-		/*else if (!strcmp(argv[0], "sort")) {
+		else if (!strcmp(argv[0], "sort")) {
 			sort(argv, argc);
-		}*/
+		}
 		// else if (!strcmp(argv[0], "?")) {
 		// TODO
 		// }
@@ -54,10 +54,10 @@ int console() {
 }
 
 int main() {
-	/*if (!login()) {
-		WriteConsole(handle_out, "\nLOGIN SUCCEED\n", strlen("\nLOGIN SUCCEED\n"), &dw, NULL);*/
+	if (!login()) {
+		WriteConsole(handle_out, "\nLOGIN SUCCEED\n", strlen("\nLOGIN SUCCEED\n"), &dw, NULL);
 		console();
-	//}
+	}
 
 	CloseHandle(handle_in);
 	CloseHandle(handle_out);

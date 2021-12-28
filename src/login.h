@@ -1,3 +1,6 @@
+#ifndef _LOGIN_H_
+#define _LOGIN_H_
+
 #include <windows.h>
 #include "commd.h"
 
@@ -28,3 +31,4 @@ BOOL dget_inputlenth(char *inputbuff);
 BOOL bget_usr(char *usrbuff, struct passwd *pw);
 BOOL icheck_psw(char *pswbuff, struct passwd *pw);
 
+#endif

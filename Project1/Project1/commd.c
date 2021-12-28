@@ -41,7 +41,7 @@ void getArgv(char *command, char *argv[8], int *argc) {
 	(*argc)--;
 
 }
-//clear the screenbuffer
+// clear the screenbuffer
 void cls(HANDLE hConsole)
 {
 	COORD coordScreen = { 0, 0 };    // home for the cursor
@@ -86,7 +86,7 @@ void cls(HANDLE hConsole)
 	SetConsoleCursorPosition(hConsole, coordScreen);
 }
 
-//command "more"
+// command "more"
 void more(char* argv[8], int* argc) {
 	cls(handle_out);
 	// no arguments 
@@ -114,7 +114,7 @@ void more(char* argv[8], int* argc) {
 	char *tmp = (char *)malloc(sizeof(char)); //read buffer
 	CONSOLE_SCREEN_BUFFER_INFO csbi;
 
-	int conf, flag, sign = 1,
+	int flag, sign = 1,
 		count = 0, count_c = 1,
 		size_r, size_c, pctg,
 		page_num = 0;
@@ -128,11 +128,21 @@ void more(char* argv[8], int* argc) {
 	liCurrentPosition.QuadPart = 0;
 	SetFilePointerEx(fp, liCurrentPosition, NULL, FILE_BEGIN);
 
+	DWORD cNumRead, fdwMode, fdwSaveOldMode;
+	INPUT_RECORD irInBuf;
+	// Save the current input mode, to be restored on exit.
+	GetConsoleMode(handle_in, &fdwSaveOldMode);
+	// Enable the window and mouse input events.
+	fdwMode = ENABLE_WINDOW_INPUT | ENABLE_MOUSE_INPUT;
+	SetConsoleMode(handle_in, fdwMode);
+
 	/* TODO */
 
 	while (fp && sign) {
 		sign = 0;
 		flag = 0;
+		FlushConsoleInputBuffer(handle_in);
+		/*irInBuf.Event.KeyEvent.uChar.AsciiChar = '\0';*/
 		// get window size
 		GetConsoleScreenBufferInfo(handle_out, &csbi);
 		size_r = csbi.srWindow.Right - csbi.srWindow.Left + 1;
@@ -141,38 +151,38 @@ void more(char* argv[8], int* argc) {
 
 		ReadFile(fp, tmp, 1, NULL, NULL);
 		// EOF keyboard response
-		stOverlapped.Offset++;
-		if (stOverlapped.Offset < dwFileSize) sign = 1;
+		if (stOverlapped.Offset++ < dwFileSize) sign = 1;
 		else {
 			WriteConsole(handle_out, tmp, 1, &dw, NULL);
 			flag = 1;
-			while (flag == 1) {
-				conf = -1;
-				if (_kbhit()) conf = _getch();
-				switch (conf) {
-				case ('b'):
-					if (page_num == 1) break;
-					cls(handle_out);
-					count = 0;
-					count_c = 1;
-					flag = -2;
-					liCurrentPosition.LowPart = index[page_num - 1];
-					SetFilePointer(fp, liCurrentPosition.LowPart, NULL, FILE_BEGIN);
-					page_num--;
-					stOverlapped.Offset = index[page_num];
-					sign = 1;
-					break;
-
-				case ('q'):
-					cls(handle_out);
-					return;
-
-				default:
-					break;
-				}
-			}
-			continue;
 		}
+		while (flag == 1 && ReadConsoleInput(handle_in, &irInBuf, 1, &cNumRead)) {
+			if (irInBuf.EventType != KEY_EVENT) continue;
+			switch (irInBuf.Event.KeyEvent.uChar.AsciiChar) {
+			case 'b':
+				if (page_num == 1) break;
+				cls(handle_out);
+				count = 0;
+				count_c = 1;
+				flag = -1;
+				sign = 1;
+				liCurrentPosition.LowPart = index[page_num - 1];
+				SetFilePointer(fp, liCurrentPosition.LowPart, NULL, FILE_BEGIN);
+				page_num--;
+				stOverlapped.Offset = index[page_num];
+				break;
+
+			case 'q':
+				cls(handle_out);
+				SetConsoleMode(handle_in, fdwSaveOldMode);
+				CloseHandle(fp);
+				return;
+
+			default:
+				break;
+			}
+		}
+		if(flag == -1) continue;
 		// another line
 		if (tmp[0] == '\n' || count > size_r) {
 			count_c++;
@@ -190,24 +200,17 @@ void more(char* argv[8], int* argc) {
 			WriteConsole(handle_out, buffer, strlen(" --MORE %d%%-- "), NULL, NULL);
 			flag = 2;
 		}
-		while (flag == 2) {
-			conf = -1;
-			if (_kbhit()) {
-				conf = _getch();
-			}
-			// keyboard response
-			switch (conf) {
-			case (' '):
+		while (flag == 2 && ReadConsoleInput(handle_in, &irInBuf, 1, &cNumRead)) {
+			if (irInBuf.EventType != KEY_EVENT) continue;
+			switch (irInBuf.Event.KeyEvent.uChar.AsciiChar) {
+			case ' ':
 				cls(handle_out);
 				count = 0;
 				count_c = 1;
 				flag = -2;
 				break;
 
-			case ('\r'):
-				/* TODO */
-
-			case ('b'):
+			case 'b':
 				if (page_num == 1) break;
 				cls(handle_out);
 				count = 0;
@@ -219,8 +222,10 @@ void more(char* argv[8], int* argc) {
 				stOverlapped.Offset = index[page_num];
 				break;
 
-			case ('q'):
+			case 'q':
 				cls(handle_out);
+				SetConsoleMode(handle_in, fdwSaveOldMode);
+				CloseHandle(fp);
 				return;
 
 			default:
@@ -230,70 +235,94 @@ void more(char* argv[8], int* argc) {
 		if ((flag == -2)) {
 			continue;
 		}
-
 		WriteConsole(handle_out, tmp, 1, &dw, NULL);
 	}
-		CloseHandle(fp);
-		WriteConsole(handle_out, "\n", strlen("\n"), &dw, NULL);
-		return;
 }
 
 // command "sort"
-//int cmpfunc(const void * a, const void * b) {
-//	line* line1 = a;
-//	line* line2 = b;
-//	return (*line1).fst_char - (*line2).fst_char;
-//}
-//
-//void sort(char *argv[8], int *argc) {
-//	cls(handle_out);
-//	// no arguments 
-//	if ((*argc) == 0) {
-//		WriteConsole(
-//			handle_out,
-//			"Please enter arguments. For further info, try 'man sort'\n",
-//			strlen("Please enter arguments. For further info, try 'man sort'\n"),
-//			&dw,
-//			NULL);
-//		return;
-//	}
-//	FILE* fp;
-//	errno_t err = fopen_s(&fp, argv[1], "r");
-//	if (err) {
-//		WriteConsole(handle_out, 
-//			"Failed to open file\n", 
-//			strlen("Failed to open file\n"), 
-//			&dw, 
-//			NULL);
-//			return;
-//	}
-//
-//	line lineset[MAX_LENGTH];
-//	char tmp[MAX_LENGTH];
-//	int seq = 0, i;
-//
-//	// read in line by line
-//	while (fp && seq < MAX_LENGTH) {
-//		i = 0;
-//		lineset[seq].offset = ftell(fp);
-//		if(fgets(tmp, MAX_LENGTH, fp));
-//		lineset[seq].fst_char = tmp[0];
-//		while (tmp[i] != '\0') {
-//			i++;
-//		}
-//		if (tmp[i - 1] != '\n') break;
-//		seq++;
-//	}
-//	// sort by first char
-//	qsort(lineset, seq + 1, sizeof(line), cmpfunc);
-//	// print sorted text
-//	for (i = 0; i <= seq; ++i) {
-//		fseek(fp, lineset[i].offset, SEEK_SET);
-//		fgets(tmp, MAX_LENGTH, fp);
-//		printf("%s", tmp);
-//	}
-//	fclose(fp);
-//}
+int cmpfunc(const void * a, const void * b) {
+	line* line1 = a;
+	line* line2 = b;
+	return (*line1).fst_char - (*line2).fst_char;
+}
+
+void sort(char *argv[8], int *argc) {
+	cls(handle_out);
+	// no arguments 
+	if ((*argc) == 0) {
+		WriteConsole(
+			handle_out,
+			"Please enter arguments. For further info, try 'man sort'\n",
+			strlen("Please enter arguments. For further info, try 'man sort'\n"),
+			&dw,
+			NULL);
+		return;
+	}
+	HANDLE fp = CreateFile(argv[1], GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+	if (fp == INVALID_HANDLE_VALUE) {
+		WriteConsole(handle_out, "Failed to open file\n",
+			strlen("Failed to open file\n"),
+			&dw,
+			NULL);
+		return;
+	}
+	DWORD dwBytesRead = 0;         //actual lenth of readbytes
+	BOOL bContinue = TRUE;         //read file control sign
+	OVERLAPPED stOverlapped = { 0 }; //read file info(offset)
+	DWORD dwFileSize = GetFileSize(fp, NULL);   //get file size
+	char *tmp = (char *)malloc(sizeof(char)); //read buffer
+	char *buffer = (char*)malloc(MAX_LENGTH*sizeof(char));
+
+	line lineset[MAX_LENGTH];
+	int seq = 0, i = 0, flag = 1;
+	LARGE_INTEGER liCurrentPosition;
+	// read in line by line
+
+	ReadFile(fp, tmp, 1, &dwBytesRead, &stOverlapped);
+	lineset[seq].fst_char = tmp[0];
+	lineset[seq].offset = FILE_BEGIN;
+	liCurrentPosition.QuadPart = 0;
+	
+		// if(fgets(tmp, MAX_LENGTH, fp));
+		while(ReadFile(fp, tmp, 1, &dwBytesRead, NULL)) {
+			// SetFilePointerEx(fp, liCurrentPosition, NULL, FILE_CURRENT);
+			if (stOverlapped.Offset++ == dwFileSize) break;
+			if (tmp[0] == '\n') {
+				// i = 0;
+				seq++;
+				stOverlapped.Offset++;
+				ReadFile(fp, tmp, 1, &dwBytesRead, NULL);
+				// SetFilePointerEx(fp, liCurrentPosition, NULL, FILE_CURRENT);
+				lineset[seq].fst_char = tmp[0];
+				lineset[seq].offset = stOverlapped.Offset;
+			}
+				//while (tmp[i] != '\0') {
+				//	i++;
+				//}
+				//if (tmp[i - 1] != '\n') break
+		}
+	// sort by first char
+	qsort(lineset, seq + 1, sizeof(line), cmpfunc);
+	stOverlapped.Offset = 0;
+	// print sorted text
+	i = 0;
+	while(i < seq && flag) {
+		liCurrentPosition.QuadPart = lineset[i].offset;
+		SetFilePointerEx(fp, liCurrentPosition, NULL, FILE_BEGIN);
+		stOverlapped.Offset = liCurrentPosition.LowPart;
+		do {
+			ReadFile(fp, tmp, 1, &dwBytesRead, NULL);
+			stOverlapped.Offset++;
+			wsprintf(buffer, TEXT("%c"), tmp[0]);
+			WriteConsole(handle_out, buffer, strlen("%c"), &dw, NULL);
+			if (stOverlapped.Offset == dwFileSize) {
+				break;
+			}
+		} while (tmp[0] != '\n');
+		i++;
+	}
+	CloseHandle(fp);
+}
 
 // command ""
 
