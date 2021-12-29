@@ -41,6 +41,11 @@ void getArgv(char *command, char *argv[8], int *argc) {
 	(*argc)--;
 
 }
+// command parser
+//BOOL parser(char *argv[8]) {
+//
+//}
+
 // clear the screenbuffer
 void cls(HANDLE hConsole)
 {
