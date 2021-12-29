@@ -1,8 +1,15 @@
-﻿  main.c
-d:\mygit\linux-shell4windows\project1\project1\main.c(72): warning C4022: “WriteConsoleA”: 指针与实参 2 不匹配
+﻿  commd.c
+d:\mygit\linux-shell4windows\project1\project1\commd.c(129): warning C4047: “==”:“int *”与“int”的间接级别不同
+d:\mygit\linux-shell4windows\project1\project1\commd.c(183): warning C4244: “=”: 从“double”转换到“int”，可能丢失数据
+d:\mygit\linux-shell4windows\project1\project1\commd.c(249): warning C4090: “初始化”: 不同的“const”限定符
+d:\mygit\linux-shell4windows\project1\project1\commd.c(250): warning C4090: “初始化”: 不同的“const”限定符
+d:\mygit\linux-shell4windows\project1\project1\commd.c(310): warning C4098: “sort”:“void”函数返回值
+  login.c
+d:\mygit\linux-shell4windows\project1\project1\login.c(285): warning C4018: “<”: 有符号/无符号不匹配
+d:\mygit\linux-shell4windows\project1\project1\login.c(446): warning C4018: “<”: 有符号/无符号不匹配
+  main.c
+d:\mygit\linux-shell4windows\project1\project1\main.c(52): warning C4133: “函数”: 从“char [2]”到“int *”的类型不兼容
   正在生成代码
-  1 of 10 functions (10.0%) were compiled, the rest were copied from previous compilation.
-    0 functions were new in current compilation
-    0 functions had inline decision re-evaluated but remain unchanged
+  All 21 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
   已完成代码的生成
-  Project1.vcxproj -> D:\MyGit\linux-shell4windows\Project1\Release\main.exe
+  Project1.vcxproj -> D:\MyGit\linux-shell4windows\Project1\Release\start.exe

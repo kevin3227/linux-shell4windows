@@ -1,6 +1,7 @@
 /* skeleton of the simplified commd */
 
 #include "commd.h"
+#include "login.h"
 #include <windows.h>
 
 HANDLE handle_in;
@@ -46,6 +47,10 @@ int console()
         {
             control = 0;
         }
+		else if (!strcmp(argv[0], "passwd"))
+		{
+			passwd(argv, "0");
+		}
         // else if (!strcmp(argv[0], "?")) {
         // TODO
         // }
@@ -64,12 +69,10 @@ int console()
 
 int main(int argc, char *argv[])
 {
-	//test commandline arguments, value: uid to specific user
-
-	handle_out = GetStdHandle(STD_OUTPUT_HANDLE);
-	char *out = GetCommandLineA();
-	WriteConsole(handle_out, out, strlen(out), &dw, NULL);
-	WriteConsole(handle_out, '\n', 1, &dw, NULL);
+    //test commandline arguments
+    //handle_out = GetStdHandle(STD_OUTPUT_HANDLE);
+    //char *out = GetCommandLineA();
+    //WriteConsole(handle_out, out, strlen(out), &dw, NULL);
 
     console();
     return 0;

@@ -15,11 +15,10 @@ int main(int argc, TCHAR *argv[])
         WriteConsole(handle_out, "\nLOGIN FAILED\n", strlen("\nLOGIN FAILED\n"), &dw, NULL);
         return 0;
     }
-	cls(handle_out);
-    // WriteConsole(handle_out, "\nLOGIN SUCCESS\n", strlen("\nLOGIN SUCCESS\n"), &dw, NULL);
+    WriteConsole(handle_out, "\nLOGIN SUCCESS\n", strlen("\nLOGIN SUCCESS\n"), &dw, NULL);
     // CloseHandle(handle_in);
     // CloseHandle(handle_out);
-
+    cls(handle_out);
     STARTUPINFO si;
     PROCESS_INFORMATION pi;
     ZeroMemory(&si, sizeof(si));
@@ -27,16 +26,16 @@ int main(int argc, TCHAR *argv[])
     ZeroMemory(&pi, sizeof(pi));
 
     // Start the child process.
-    if (!CreateProcess("main.exe",          // No module name (use command line)
-                       cxt.uid, // Command line
-                       NULL,          // Process handle not inheritable
-                       NULL,          // Thread handle not inheritable
-                       FALSE,         // Set handle inheritance to FALSE
-                       0,             // No creation flags
-                       NULL,          // Use parent's environment block
-                       NULL,          // Use parent's starting directory
-                       &si,           // Pointer to STARTUPINFO structure
-                       &pi)           // Pointer to PROCESS_INFORMATION structure
+    if (!CreateProcess("main.exe", // No module name (use command line)
+                       cxt.uid,    // Command line
+                       NULL,       // Process handle not inheritable
+                       NULL,       // Thread handle not inheritable
+                       FALSE,      // Set handle inheritance to FALSE
+                       0,          // No creation flags
+                       NULL,       // Use parent's environment block
+                       NULL,       // Use parent's starting directory
+                       &si,        // Pointer to STARTUPINFO structure
+                       &pi)        // Pointer to PROCESS_INFORMATION structure
     )
     {
         WriteConsole(handle_out, "\nCREATE PROCESS FAILED\n", strlen("\nCREATE PROCESS FAILED\n"), &dw, NULL);

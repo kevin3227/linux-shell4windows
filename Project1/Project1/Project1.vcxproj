@@ -101,7 +101,7 @@
     <TargetName>main</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <TargetName>main</TargetName>
+    <TargetName>start</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='start|Win32'">
     <TargetName>start</TargetName>
