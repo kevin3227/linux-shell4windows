@@ -14,6 +14,7 @@ int console() {
 	handle_out = GetStdHandle(STD_OUTPUT_HANDLE);
 
 	int control = 1;
+
 	// main loop
 	while (control) {
 		// get current directory
@@ -25,25 +26,23 @@ int console() {
 
 		// define a buffer to receive command and argv
 		char *command = (char*)malloc(sizeof(char) * 512);  //1KB
-		char *argv[8];  //max 8 argv(8*64 = 512)
+		char *argv[MAX_ARG_NUM];  //max MAX_ARG_NUM argv(MAX_ARG_NUM*64 = 512)
 		int *argc = (int*)malloc(sizeof(int*));
+		arg arg[MAX_ARG_NUM] = { "" }; // argument queue
+
+		int count_q;
 
 		// get command from console input
 		ReadConsole(handle_in, command, 512, &dw, NULL);
 		getArgv(command, argv, argc);
 		if ((*argc) == -1) continue;
-		else if (!strcmp(argv[0], "more")) {
-			more(argv, argc);
-		}
-		else if (!strcmp(argv[0], "sort")) {
-			sort(argv, argc);
-		}
-		// else if (!strcmp(argv[0], "?")) {
-		// TODO
-		// }
-		else {
+		count_q = parser(argv, argc, commd_queue, arg);
+		if (!count_q) {
 			WriteConsole(handle_out, "Command not found\n", strlen("Command not found\n"), &dw, NULL);
 			continue;
+		}
+		else {
+			process_queue(commd_queue, arg);
 		}
 	}
 
@@ -54,10 +53,20 @@ int console() {
 }
 
 int main() {
-	if (!login()) {
-		WriteConsole(handle_out, "\nLOGIN SUCCEED\n", strlen("\nLOGIN SUCCEED\n"), &dw, NULL);
+	//HANDLE hReadPipe = NULL;
+	//HANDLE hWritePipe = NULL;
+
+	sa.nLength = sizeof(sa);
+	sa.bInheritHandle = TRUE;
+	sa.lpSecurityDescriptor = NULL;
+	ZeroMemory(&si, sizeof(si));
+	si.cb = sizeof(si);
+	ZeroMemory(&pi, sizeof(pi));
+
+//	if (!login()) {
+//		WriteConsole(handle_out, "\nLOGIN SUCCEED\n", strlen("\nLOGIN SUCCEED\n"), &dw, NULL);
 		console();
-	}
+//	}
 
 	CloseHandle(handle_in);
 	CloseHandle(handle_out);

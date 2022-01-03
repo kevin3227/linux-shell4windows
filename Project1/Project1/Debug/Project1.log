@@ -1,5 +1,8 @@
 ﻿  commd.c
-e:\zk_c\cs\repo\linux-shell4windows\project1\project1\commd.c(202): warning C4244: “=”: 从“double”转换到“int”，可能丢失数据
-e:\zk_c\cs\repo\linux-shell4windows\project1\project1\commd.c(249): warning C4090: “初始化”: 不同的“const”限定符
-e:\zk_c\cs\repo\linux-shell4windows\project1\project1\commd.c(250): warning C4090: “初始化”: 不同的“const”限定符
+  login.c
+e:\zk_c\cs\repo\linux-shell4windows\project1\project1\login.c(44): warning C4047: “初始化”:“DWORD”与“void *”的间接级别不同
+e:\zk_c\cs\repo\linux-shell4windows\project1\project1\login.c(123): warning C4142: "dget_inputlenth": 类型的良性重定义
+  e:\zk_c\cs\repo\linux-shell4windows\project1\project1\login.h(30): note: 参见“dget_inputlenth”的声明
+  main.c
+  正在生成代码...
   Project1.vcxproj -> E:\Zk_C\CS\Repo\linux-shell4windows\Project1\Debug\Project1.exe

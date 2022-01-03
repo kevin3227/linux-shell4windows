@@ -1,4 +1,4 @@
-/* implementation of the commands */
+/* process commands */
 
 #include"commd.h"
 
@@ -6,7 +6,16 @@ extern HANDLE handle_in;
 extern HANDLE handle_out;
 extern DWORD dw;
 
-void getArgv(char *command, char *argv[8], int *argc) {
+extern HANDLE hReadPipe = NULL;
+extern HANDLE hWritePipe = NULL;
+
+extern SECURITY_ATTRIBUTES sa;
+extern STARTUPINFO si;
+extern PROCESS_INFORMATION pi;
+
+int redir_flag = 0, count_a, count_q;
+
+void getArgv(char *command, char *argv[MAX_ARG_NUM], int *argc) {
 	// index for scaning command
 	char *command_index = command;
 
@@ -14,7 +23,7 @@ void getArgv(char *command, char *argv[8], int *argc) {
 	for ((*argc) = 0; 
 	(*command_index) != '\n' 
 	&& (*command_index) != '\r' 
-	&& (*argc) < 8; (*argc)++) {
+	&& (*argc) < MAX_ARG_NUM; (*argc)++) {
 		// get argv
 		int index = 0;
 		// save the split argv
@@ -41,294 +50,147 @@ void getArgv(char *command, char *argv[8], int *argc) {
 	(*argc)--;
 
 }
-// command parser
-//BOOL parser(char *argv[8]) {
-//
+
+// search the command table
+static inline int search_commd(char* commd) {
+	for (int i = 0; i <= COMMD_NUM - 1; i++) {
+		if (!strcmp(commd, commd_table[i])) return i;
+	}
+	return -1;
+}
+
+//static inline void str_cpy(char* argv[MAX_ARG_NUM], arg arg[MAX_ARG_NUM], int count_a, int count_q) {
+//	int i = 0;
+//	while (argv[count_a][i] != '\0' && i < strlen(argv[count_a])) {
+//		arg[count_q].output[i] = argv[count_a][i];
+//		i++;
+//	}
 //}
 
-// clear the screenbuffer
-void cls(HANDLE hConsole)
-{
-	COORD coordScreen = { 0, 0 };    // home for the cursor
-	DWORD cCharsWritten;
-	CONSOLE_SCREEN_BUFFER_INFO csbi;
-	DWORD dwConSize;
+// set progress
+void set_process(int count_c ,arg arg[MAX_ARG_NUM]) {
+	int pos;
+ 	if (!count_c && count_c != count_q - 1) pos = FIRST;
+	else if (count_c == count_q - 1) pos = LAST;
+	else pos = MIDDLE;
+	char* commd = (char*)malloc(MAX_LENGTH * sizeof(char));
+	if (count_q != 1 && (!strcmp(arg[count_c].input, "") || !strcmp(arg[count_c].output, ""))) {
+		switch (pos) {
+		case FIRST:
+			wsprintf(commd, TEXT("%s.exe %s %s"), commd_table[commd_queue[count_c]], arg[count_c].input, PIPE);
+			break;
 
-	// Get the number of character cells in the current buffer.
-	if (!GetConsoleScreenBufferInfo(hConsole, &csbi))
-	{
-		return;
+		case MIDDLE:
+			wsprintf(commd, TEXT("%s.exe %s %s"), commd_table[commd_queue[count_c]], PIPE, PIPE);
+			break;
+
+		case LAST:
+			wsprintf(commd, TEXT("%s.exe %s %s"), commd_table[commd_queue[count_c]], PIPE, "STD_OUTPUT");
+			break;
+		}
 	}
-	dwConSize = csbi.dwSize.X * csbi.dwSize.Y;
-
-	// Fill the entire screen with blanks.
-	if (!FillConsoleOutputCharacter(hConsole,        // Handle to console screen buffer
-		(TCHAR)' ',      // Character to write to the buffer
-		dwConSize,       // Number of cells to write
-		coordScreen,     // Coordinates of first cell
-		&cCharsWritten)) // Receive number of characters written
-	{
-		return;
+	else if (!strcmp(arg[count_c].output, "")){
+		wsprintf(commd, TEXT("%s.exe %s %s"), commd_table[commd_queue[count_c]], arg[count_c].input, "STD_OUTPUT");
 	}
-
-	// Get the current text attribute.
-	if (!GetConsoleScreenBufferInfo(hConsole, &csbi))
-	{
-		return;
+	else {
+		wsprintf(commd, TEXT("%s.exe %s %s"), commd_table[commd_queue[count_c]], arg[count_c].input, arg[count_c].output);
 	}
 
-	// Set the buffer's attributes accordingly.
-	if (!FillConsoleOutputAttribute(hConsole,         // Handle to console screen buffer
-		csbi.wAttributes, // Character attributes to use
-		dwConSize,        // Number of cells to set attribute
-		coordScreen,      // Coordinates of first cell
-		&cCharsWritten))  // Receive number of characters written
+	if (!CreateProcess(NULL,   // No module name (use command line)
+		commd,        // Command line
+		NULL,           // Process handle not inheritable
+		NULL,           // Thread handle not inheritable
+		FALSE,          // Set handle inheritance to FALSE
+		0,              // No creation flags
+		NULL,           // Use parent's environment block
+		NULL,           // Use parent's starting directory
+		&si,            // Pointer to STARTUPINFO structure
+		&pi)           // Pointer to PROCESS_INFORMATION structure
+		)
 	{
+		WriteConsole(handle_out, "CreateProcess failed\n", strlen("CreateProcess failed\n"), NULL, NULL);
 		return;
 	}
-
-	// Put the cursor at its home coordinates.
-	SetConsoleCursorPosition(hConsole, coordScreen);
+	WaitForSingleObject(pi.hProcess, INFINITE);
+	CloseHandle(pi.hProcess);
+	CloseHandle(pi.hThread);
 }
 
-// command "more"
-void more(char* argv[8], int* argc) {
-	cls(handle_out);
-	// no arguments 
-	if ((*argc) == 0) {
-		WriteConsole(
-			handle_out,
-			"Please enter arguments. For further info, try 'man more'\n",
-			strlen("Please enter arguments. For further info, try 'man more'\n"),
-			&dw,
-			NULL);
-		return;
+// command parser
+int parser(char *argv[MAX_ARG_NUM], int* argc, int commd_queue[MAX_ARG_NUM], arg arg[MAX_ARG_NUM]) {
+	size_t i = 0;
+	if (search_commd(argv[0]) == -1) { // first argument is not a command
+		while (argv[0][i] != '\0' && i < strlen(argv[0])) {
+			arg[0].input[i] = argv[0][i];
+			i++;
+		}
 	}
-	HANDLE fp = CreateFile(argv[1], GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
-	if (fp == INVALID_HANDLE_VALUE) {
-		WriteConsole(handle_out, "Failed to open file\n",
-			strlen("Failed to open file\n"),
-			&dw,
-			NULL);
-		return;
-	}
-	DWORD dwBytesRead = 0;         //actual lenth of readbytes
-	BOOL bContinue = TRUE;         //read file control sign
-	OVERLAPPED stOverlapped = { 0 }; //read file info(offset)
-	DWORD dwFileSize = GetFileSize(fp, NULL);   //get file size
-	char *tmp = (char *)malloc(sizeof(char)); //read buffer
-	CONSOLE_SCREEN_BUFFER_INFO csbi;
-
-	int flag, sign = 1,
-		count = 0, count_c = 1,
-		size_r, size_c, pctg,
-		page_num = 0;
-	DWORD index[MAX_PAGENUM];
-	char *fst_char = (char*)malloc(sizeof(char)),
-		*buffer = (char*)malloc(MAX_LENGTH * sizeof(char));
-	LARGE_INTEGER liCurrentPosition;
-
-	index[page_num] = FILE_BEGIN;
-	ReadFile(fp, fst_char, 1, &dwBytesRead, &stOverlapped);
-	liCurrentPosition.QuadPart = 0;
-	SetFilePointerEx(fp, liCurrentPosition, NULL, FILE_BEGIN);
-
-	DWORD cNumRead, fdwMode, fdwSaveOldMode;
-	INPUT_RECORD irInBuf;
-	// Save the current input mode, to be restored on exit.
-	GetConsoleMode(handle_in, &fdwSaveOldMode);
-	// Enable the window and mouse input events.
-	fdwMode = ENABLE_WINDOW_INPUT | ENABLE_MOUSE_INPUT;
-	SetConsoleMode(handle_in, fdwMode);
-
-	/* TODO */
-
-	while (fp && sign) {
-		sign = 0;
-		flag = 0;
-		FlushConsoleInputBuffer(handle_in);
-		/*irInBuf.Event.KeyEvent.uChar.AsciiChar = '\0';*/
-		// get window size
-		GetConsoleScreenBufferInfo(handle_out, &csbi);
-		size_r = csbi.srWindow.Right - csbi.srWindow.Left + 1;
-		size_c = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
-		count++;
-
-		ReadFile(fp, tmp, 1, NULL, NULL);
-		// EOF keyboard response
-		if (stOverlapped.Offset++ < dwFileSize) sign = 1;
-		else {
-			WriteConsole(handle_out, tmp, 1, &dw, NULL);
-			flag = 1;
-		}
-		while (flag == 1 && ReadConsoleInput(handle_in, &irInBuf, 1, &cNumRead)) {
-			if (irInBuf.EventType != KEY_EVENT) continue;
-			switch (irInBuf.Event.KeyEvent.uChar.AsciiChar) {
-			case 'b':
-				if (page_num == 1) break;
-				cls(handle_out);
-				count = 0;
-				count_c = 1;
-				flag = -1;
-				sign = 1;
-				liCurrentPosition.LowPart = index[page_num - 1];
-				SetFilePointer(fp, liCurrentPosition.LowPart, NULL, FILE_BEGIN);
-				page_num--;
-				stOverlapped.Offset = index[page_num];
-				break;
-
-			case 'q':
-				cls(handle_out);
-				SetConsoleMode(handle_in, fdwSaveOldMode);
-				CloseHandle(fp);
-				return;
-
-			default:
-				break;
-			}
-		}
-		if(flag == -1) continue;
-		// another line
-		if (tmp[0] == '\n' || count > size_r) {
-			count_c++;
-			count = 0;
-		}
-		// another page
-		if (count_c >= size_c) {
-			page_num++;
-			/*liCurrentPosition.QuadPart = 0;
-			SetFilePointerEx(fp, liCurrentPosition, &liCurrentPosition, FILE_CURRENT);*/
-			index[page_num] = stOverlapped.Offset;
-			pctg = ((double)index[page_num] / (double)dwFileSize) * 100.0;
-			WriteConsole(handle_out, tmp, 1, &dw, NULL);
-			wsprintf(buffer, TEXT(" --MORE %d%%-- "), pctg);
-			WriteConsole(handle_out, buffer, strlen(" --MORE %d%%-- "), NULL, NULL);
-			flag = 2;
-		}
-		while (flag == 2 && ReadConsoleInput(handle_in, &irInBuf, 1, &cNumRead)) {
-			if (irInBuf.EventType != KEY_EVENT) continue;
-			switch (irInBuf.Event.KeyEvent.uChar.AsciiChar) {
-			case ' ':
-				cls(handle_out);
-				count = 0;
-				count_c = 1;
-				flag = -2;
-				break;
-
-			case 'b':
-				if (page_num == 1) break;
-				cls(handle_out);
-				count = 0;
-				count_c = 1;
-				flag = -2;
-				liCurrentPosition.LowPart = index[page_num - 2];
-				SetFilePointer(fp, liCurrentPosition.LowPart, NULL, FILE_BEGIN);
-				page_num -= 2;
-				stOverlapped.Offset = index[page_num];
-				break;
-
-			case 'q':
-				cls(handle_out);
-				SetConsoleMode(handle_in, fdwSaveOldMode);
-				CloseHandle(fp);
-				return;
-
-			default:
-				break;
-			}
-		}
-		if ((flag == -2)) {
+	count_a = 0;
+	count_q = 0;
+	while (argv[count_a] != "" && count_a < (*argc) + 1 && count_q < (*argc) + 1) { // generate a command queue
+		int index = search_commd(argv[count_a]);
+		if (index == -1) {
+			count_a++;
 			continue;
 		}
-		WriteConsole(handle_out, tmp, 1, &dw, NULL);
-	}
-}
-
-// command "sort"
-int cmpfunc(const void * a, const void * b) {
-	line* line1 = a;
-	line* line2 = b;
-	return (*line1).fst_char - (*line2).fst_char;
-}
-
-void sort(char *argv[8], int *argc) {
-	cls(handle_out);
-	// no arguments 
-	if ((*argc) == 0) {
-		WriteConsole(
-			handle_out,
-			"Please enter arguments. For further info, try 'man sort'\n",
-			strlen("Please enter arguments. For further info, try 'man sort'\n"),
-			&dw,
-			NULL);
-		return;
-	}
-	HANDLE fp = CreateFile(argv[1], GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
-	if (fp == INVALID_HANDLE_VALUE) {
-		WriteConsole(handle_out, "Failed to open file\n",
-			strlen("Failed to open file\n"),
-			&dw,
-			NULL);
-		return;
-	}
-	DWORD dwBytesRead = 0;         //actual lenth of readbytes
-	BOOL bContinue = TRUE;         //read file control sign
-	OVERLAPPED stOverlapped = { 0 }; //read file info(offset)
-	DWORD dwFileSize = GetFileSize(fp, NULL);   //get file size
-	char *tmp = (char *)malloc(sizeof(char)); //read buffer
-	char *buffer = (char*)malloc(MAX_LENGTH*sizeof(char));
-
-	line lineset[MAX_LENGTH];
-	int seq = 0, i = 0, flag = 1;
-	LARGE_INTEGER liCurrentPosition;
-	// read in line by line
-
-	ReadFile(fp, tmp, 1, &dwBytesRead, &stOverlapped);
-	lineset[seq].fst_char = tmp[0];
-	lineset[seq].offset = FILE_BEGIN;
-	liCurrentPosition.QuadPart = 0;
-	
-		// if(fgets(tmp, MAX_LENGTH, fp));
-		while(ReadFile(fp, tmp, 1, &dwBytesRead, NULL)) {
-			// SetFilePointerEx(fp, liCurrentPosition, NULL, FILE_CURRENT);
-			if (stOverlapped.Offset++ == dwFileSize) break;
-			if (tmp[0] == '\n') {
-				// i = 0;
-				seq++;
-				stOverlapped.Offset++;
-				ReadFile(fp, tmp, 1, &dwBytesRead, NULL);
-				// SetFilePointerEx(fp, liCurrentPosition, NULL, FILE_CURRENT);
-				lineset[seq].fst_char = tmp[0];
-				lineset[seq].offset = stOverlapped.Offset;
-			}
-				//while (tmp[i] != '\0') {
-				//	i++;
-				//}
-				//if (tmp[i - 1] != '\n') break
+		commd_queue[count_q] = index;
+		count_a++;
+		count_q++;
+		if (count_a == (*argc) + 1 || !strcmp(argv[count_a], "|")) {
+			continue;
 		}
-	// sort by first char
-	qsort(lineset, seq + 1, sizeof(line), cmpfunc);
-	stOverlapped.Offset = 0;
-	// print sorted text
-	i = 0;
-	while(i < seq && flag) {
-		liCurrentPosition.QuadPart = lineset[i].offset;
-		SetFilePointerEx(fp, liCurrentPosition, NULL, FILE_BEGIN);
-		stOverlapped.Offset = liCurrentPosition.LowPart;
-		do {
-			ReadFile(fp, tmp, 1, &dwBytesRead, NULL);
-			stOverlapped.Offset++;
-			wsprintf(buffer, TEXT("%c"), tmp[0]);
-			WriteConsole(handle_out, buffer, strlen("%c"), &dw, NULL);
-			if (stOverlapped.Offset == dwFileSize) {
-				break;
+		else if (count_a + 1 <= (*argc) && !strcmp(argv[count_a], "<")) {
+			i = 0;
+			while (argv[count_a + 1][i] != '\0' && i < strlen(argv[count_a + 1])) {
+				arg[count_q - 1].input[i] = argv[count_a + 1][i];
+				i++;
 			}
-		} while (tmp[0] != '\n');
-		i++;
+		}
+		if (count_a + 1 <= (*argc) && !strcmp(argv[count_a], ">")) {
+			i = 0;
+			while (argv[count_a + 1][i] != '\0' && i < strlen(argv[count_a + 1])) {
+				arg[count_q - 1].output[i] = argv[count_a + 1][i];
+				i++;
+			}
+		}
+		if (count_a - 3 >= 0 && !strcmp(argv[count_a - 2], ">")) {
+			i = 0;
+			while (argv[count_a - 3][i] != '\0' && i < strlen(argv[count_a - 3])) {
+				arg[count_q - 1].input[i] = argv[count_a - 3][i];
+				i++;
+			}
+		}
+		if (count_a - 3 >= 0 && !strcmp(argv[count_a - 2], "<")) {
+			i = 0;
+			while (argv[count_a - 3][i] != '\0' && i < strlen(argv[count_a - 3])) {
+				arg[count_q - 1].output[i] = argv[count_a - 3][i];
+				i++;
+			}
+		}
+		if (count_a <= (*argc) && !strcmp(arg[count_q - 1].input, "") && strcmp(argv[count_a], "|")) {
+			i = 0;
+			while (argv[count_a][i] != '\0' && i < strlen(argv[count_a])) {
+				arg[count_q - 1].input[i] = argv[count_a][i];
+				i++;
+			}
+		}
+		if (count_a + 2 <= (*argc) && !strcmp(arg[count_q - 1].output, "") && !strcmp(argv[count_a + 1], ">")) {
+			i = 0;
+			while (argv[count_a + 2][i] != '\0' && i < strlen(argv[count_a + 2])) {
+				arg[count_q - 1].output[i] = argv[count_a + 2][i];
+				i++;
+			}
+		}
 	}
-	CloseHandle(fp);
+
+	return count_q; // number of commands
 }
 
-// command ""
-
-/* TODO */
+// process the queue
+void process_queue(int commd_queue[MAX_ARG_NUM], arg arg[MAX_ARG_NUM]) {
+	int count_c = 0;
+	while (count_c < count_q) {
+		set_process(count_c, arg);
+		count_c++;
+	}
+}
