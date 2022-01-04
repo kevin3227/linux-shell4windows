@@ -5,9 +5,7 @@ HANDLE handle_in;
 HANDLE handle_out;
 DWORD dw;
 
-// /* TODO */
-
-int main(int argc, TCHAR *argv[])
+int main(int argc, char *argv[])
 {
     struct login_context cxt;
     if (login(&cxt))
@@ -16,8 +14,8 @@ int main(int argc, TCHAR *argv[])
         return 0;
     }
     WriteConsole(handle_out, "\nLOGIN SUCCESS\n", strlen("\nLOGIN SUCCESS\n"), &dw, NULL);
-    // CloseHandle(handle_in);
-    // CloseHandle(handle_out);
+    CloseHandle(handle_in);
+    CloseHandle(handle_out);
     cls(handle_out);
     STARTUPINFO si;
     PROCESS_INFORMATION pi;

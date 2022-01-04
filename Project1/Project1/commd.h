@@ -3,6 +3,7 @@
 
 #include <Windows.h>
 #include <stdio.h>
+#include "login.h"
 #define MAX_PAGENUM 1024
 #define MAX_LENGTH 1024
 

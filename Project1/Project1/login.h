@@ -22,27 +22,20 @@ struct login_context
     char *uid;
     DWORD pid;
 };
-HANDLE hEvent;
-HANDLE hFile;
-DWORD oldIMode;
-DWORD iMode;
-char *usrbuff;
-char *pswbuff;
-struct passwd pw;
 
 //command "login"
 BOOL login(struct login_context *cxt);
 //command "passwd"
-BOOL passwd(char *argv[8], int *argc);
+BOOL passwd();
 //command "logout"
 BOOL logout();
 
-DWORD dLogin_initial(struct login_context *cxt);
+DWORD dLogin_initial(struct passwd *pw);
 BOOL bpasswd_initial();
 BOOL brfile_init(char *path);
 BOOL bwfile_init(char *path);
 
-BOOL bget_usr(char *usrbuff, struct login_context *cxt);
+BOOL bget_usr(char *usrbuff);
 BOOL bcheck_psw(char *pswbuff, struct passwd *pw);
 char *cHashMD5(char *data, DWORD *result);
 
