@@ -2,8 +2,11 @@
 #define _SHELL_H_
 
 #include<Windows.h>
+#include<stdlib.h>
 #include<fileapi.h>
 #include<tchar.h>
+//#include<stdio.h>
+//#include<stdlib.h>
 
 #define MAX_PAGE_NUM 1024
 #define MAX_LENGTH 1024
@@ -11,25 +14,23 @@
 #define COMMD_NUM 5
 #define POS_NUM 3
 
-// command position
-#define FIRST 0
-#define MIDDLE 1
-#define LAST 2
+//// command position
+//#define FIRST 0
+//#define MIDDLE 1
+//#define LAST 2
 
 #define PIPE "pipefile"
+#define INPUT_TYPE argv[1]
+#define OUTPUT_TYPE argv[2]
+#define OVERWRITE argv[3]
+#define OPT_ARG argv[4]
 
 static char* commd_table[COMMD_NUM] = {
-	"password", // 0
+	"passwd", // 0
 	"logout",	// 1
 	"sort",		// 2
 	"more",		// 3
 	"print"		// 4
-};
-
-static char* pos_table[POS_NUM] = {
-	"first", // 0
-	"middle",	// 1
-	"last"		// 2
 };
 
 HANDLE handle_in;
@@ -48,8 +49,8 @@ typedef struct {
 typedef struct {
 	char input[MAX_LENGTH];
 	char output[MAX_LENGTH];
-	// char* opt_arg[MAX_ARG_NUM];
-	// char overwrite;
+	char opt_arg[MAX_LENGTH];
+	char overwrite[MAX_LENGTH];
 }arg;
 
 int commd_queue[MAX_ARG_NUM]; // command queue

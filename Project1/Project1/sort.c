@@ -50,12 +50,20 @@ int cmpfunc(const void * a, const void * b) {
 	return (*line1).fst_char - (*line2).fst_char;
 }
 
-void sort(char *input, char* output) {
+void sort(char* input, char* output, char* overwrite, char* opt) {
 	HANDLE fp, handle_out = GetStdHandle(STD_OUTPUT_HANDLE);
 	
 	cls(handle_out);
+	if (!strcmp(input, "STD_INPUT")) {
+		fp = CreateFile(opt, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+	}
+	else if(!strcmp(input, PIPE)) {
+		fp = CreateFile(PIPE, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+	}
+	else {
+		fp = CreateFile(input, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+	}
 	
-	fp = CreateFile(input, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
 	if (fp == INVALID_HANDLE_VALUE) {
 		WriteConsole(handle_out, "Failed to open file\n",
 			strlen("Failed to open file\n"),
@@ -93,10 +101,6 @@ void sort(char *input, char* output) {
 			lineset[seq].fst_char = tmp[0];
 			lineset[seq].offset = stOverlapped.Offset;
 		}
-			//while (tmp[i] != '\0') {
-			//	i++;
-			//}
-			//if (tmp[i - 1] != '\n') break
 	}
 	// sort by first char
 	qsort(lineset, seq + 1, sizeof(line), cmpfunc);
@@ -106,7 +110,22 @@ void sort(char *input, char* output) {
 		handle_out = CreateFile(PIPE, GENERIC_WRITE, FILE_SHARE_WRITE, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);
 	} 
 	else if (strcmp(output, "STD_OUTPUT")) {
-		handle_out = CreateFile(output, GENERIC_WRITE, FILE_SHARE_WRITE, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);
+		if(!strcmp(overwrite, "FALSE")) {
+			if (handle_out = CreateFile(output, GENERIC_WRITE, FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0) == INVALID_HANDLE_VALUE) {
+				handle_out = GetStdHandle(STD_OUTPUT_HANDLE);
+				WriteConsole(handle_out, "Failed to open file\n",
+				strlen("Failed to open file\n"),
+				&dw,
+				NULL);
+				return;
+			}
+			handle_out = CreateFile(output, GENERIC_WRITE, FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+			liCurrentPosition.QuadPart = 0;
+			SetFilePointerEx(handle_out, liCurrentPosition, NULL, FILE_END);
+		} 
+		else {
+			handle_out = CreateFile(output, GENERIC_WRITE, FILE_SHARE_WRITE, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);
+		}
 	}
 	
 	i = 0;
@@ -127,6 +146,6 @@ void sort(char *input, char* output) {
 }
 
 int main(int argc, TCHAR *argv[]) {
-	sort(argv[1], argv[2]);
+	sort(INPUT_TYPE, OUTPUT_TYPE, OVERWRITE, OPT_ARG);
 	return 0;
 }

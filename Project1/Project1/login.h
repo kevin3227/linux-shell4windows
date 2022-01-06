@@ -4,6 +4,10 @@
 #include <windows.h>
 #include "commd.h"
 
+extern HANDLE handle_in;
+extern HANDLE handle_out;
+extern DWORD dw;
+
 struct passwd
 {
     char *pw_name; /* Username. */
@@ -15,20 +19,30 @@ struct passwd
 struct login_context
 {
     struct passwd *pwd; /* user info */
-
+    char *uid;
     DWORD pid;
 };
 
 //command "login"
-BOOL login();
+BOOL login(struct login_context *cxt);
 //command "passwd"
-void password();
+BOOL passwd(char* argv,char* uid);
 //command "logout"
-void logout();
+BOOL logout();
 
-DWORD LoginInitial(struct login_context *cxt);
-BOOL dget_inputlenth(char *inputbuff);
-BOOL bget_usr(char *usrbuff, struct passwd *pw);
-BOOL icheck_psw(char *pswbuff, struct passwd *pw);
+DWORD dLogin_initial(struct passwd *pw);
+BOOL bpasswd_initial();
+BOOL brfile_init(char *path);
+BOOL bwfile_init(char *path);
 
+BOOL bget_usr(char *usrbuff);
+BOOL bcheck_psw(char *pswbuff, struct passwd *pw);
+char *cHashMD5(char *data, DWORD *result);
+BOOL bgetidbyname(char *uid, char *name);
+BOOL bgetnamebyid(char *name, char *id);
+BOOL bgetpswbyname(char *psw, char *name);
+BOOL bwritepsw(char *name, char *psw);
+BOOL bcmpstring(char *str1, char *str2);
+BOOL bcpstring(char *source_str, char *taget_str, int lenth);
+DWORD dget_inputlenth(char *inputbuff);
 #endif

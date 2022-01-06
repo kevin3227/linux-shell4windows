@@ -8,7 +8,7 @@ extern HANDLE handle_in;
 extern HANDLE handle_out;
 extern DWORD dw;
 
-int console() {
+int console(char* uid) {
 	// I/O handle Windows API
 	handle_in = GetStdHandle(STD_INPUT_HANDLE);
 	handle_out = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -28,7 +28,7 @@ int console() {
 		char *command = (char*)malloc(sizeof(char) * 512);  //1KB
 		char *argv[MAX_ARG_NUM];  //max MAX_ARG_NUM argv(MAX_ARG_NUM*64 = 512)
 		int *argc = (int*)malloc(sizeof(int*));
-		arg arg[MAX_ARG_NUM] = { "" }; // argument queue
+		arg arg[MAX_ARG_NUM]; // argument queue
 
 		int count_q;
 
@@ -36,6 +36,18 @@ int console() {
 		ReadConsole(handle_in, command, 512, &dw, NULL);
 		getArgv(command, argv, argc);
 		if ((*argc) == -1) continue;
+		else if (!strcmp(argv[0], "passwd")) {
+			//WriteConsole(handle_out, uid, strlen(uid), &dw, NULL);
+			passwd(argv[1], uid);
+			continue;
+		}
+		else if (!strcmp(argv[0], "logout")) {
+			return;
+		}
+		else if (!strcmp(argv[0], "clear")) {
+			cls(handle_out);
+			continue;
+		}
 		count_q = parser(argv, argc, commd_queue, arg);
 		if (!count_q) {
 			WriteConsole(handle_out, "Command not found\n", strlen("Command not found\n"), &dw, NULL);
@@ -52,21 +64,21 @@ int console() {
 	return 0;
 }
 
-int main() {
+int main(int argc, char* argv[]) {
 	//HANDLE hReadPipe = NULL;
 	//HANDLE hWritePipe = NULL;
+	//handle_out = GetStdHandle(STD_OUTPUT_HANDLE);
+	//char *uid = GetCommandLineA();
+	//WriteConsole(handle_out, uid, strlen(uid), &dw, NULL);
 
+	char*uid = "1";
 	sa.nLength = sizeof(sa);
 	sa.bInheritHandle = TRUE;
 	sa.lpSecurityDescriptor = NULL;
 	ZeroMemory(&si, sizeof(si));
 	si.cb = sizeof(si);
 	ZeroMemory(&pi, sizeof(pi));
-
-//	if (!login()) {
-//		WriteConsole(handle_out, "\nLOGIN SUCCEED\n", strlen("\nLOGIN SUCCEED\n"), &dw, NULL);
-		console();
-//	}
+	console(uid);
 
 	CloseHandle(handle_in);
 	CloseHandle(handle_out);
