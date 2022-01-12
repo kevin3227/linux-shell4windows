@@ -1,33 +1,44 @@
-/* implementation of the commands */
+/* process commands */
 
-#include "commd.h"
-#include <string.h>
-#include <conio.h>
-#include <math.h>
+#include"commd.h"
 
-void getArgv(char *command, char *argv[8], int *argc)
-{
+extern HANDLE handle_in;
+extern HANDLE handle_out;
+extern DWORD dw;
+
+extern HANDLE hReadPipe = NULL;
+extern HANDLE hWritePipe = NULL;
+
+extern SECURITY_ATTRIBUTES sa;
+extern STARTUPINFO si;
+extern PROCESS_INFORMATION pi;
+
+int redir_flag = 0, count_a, count_q;
+
+void getArgv(char *command, char *argv[MAX_ARG_NUM], int *argc) {
 	// index for scaning command
 	char *command_index = command;
 
 	// scan command string and split to argv
-	for ((*argc) = 0;
-		 (*command_index) != '\n' && (*command_index) != '\r' && (*argc) < 8; (*argc)++)
-	{
+	for ((*argc) = 0; 
+	(*command_index) != '\n' 
+	&& (*command_index) != '\r' 
+	&& (*argc) < MAX_ARG_NUM; (*argc)++) {
 		// get argv
 		int index = 0;
 		// save the split argv
-		argv[(*argc)] = (char *)malloc(sizeof(char) * 64);
+		argv[(*argc)] = (char*)malloc(sizeof(char) * 64);
 		// if character is space or enter or alt than move
-		while ((*command_index) == ' ')
-		{
+		while ((*command_index) == ' ') {
 			command_index++;
 		}
 		// remove space enter alt
 		while (
-			(*command_index) != ' ' && (*command_index) != '\n' && (*command_index) != '\r' && (*command_index) != '\0')
-		{
-			// judge command character and save to the split argv
+		(*command_index) != ' ' 
+		&& (*command_index) != '\n' 
+		&& (*command_index) != '\r' 
+		&& (*command_index) != '\0') {
+			// iudge command character and save to the split argv
 			*(argv[(*argc)] + index) = (*command_index);
 			command_index++;
 			index++;
@@ -37,11 +48,13 @@ void getArgv(char *command, char *argv[8], int *argc)
 	}
 	argv[*(argc)] = '\0';
 	(*argc)--;
+
 }
-//clear the screenbuffer
+
+//
 void cls(HANDLE hConsole)
 {
-	COORD coordScreen = {0, 0}; // home for the cursor
+	COORD coordScreen = { 0, 0 };    // home for the cursor
 	DWORD cCharsWritten;
 	CONSOLE_SCREEN_BUFFER_INFO csbi;
 	DWORD dwConSize;
@@ -54,11 +67,11 @@ void cls(HANDLE hConsole)
 	dwConSize = csbi.dwSize.X * csbi.dwSize.Y;
 
 	// Fill the entire screen with blanks.
-	if (!FillConsoleOutputCharacter(hConsole,		 // Handle to console screen buffer
-									(TCHAR)' ',		 // Character to write to the buffer
-									dwConSize,		 // Number of cells to write
-									coordScreen,	 // Coordinates of first cell
-									&cCharsWritten)) // Receive number of characters written
+	if (!FillConsoleOutputCharacter(hConsole,        // Handle to console screen buffer
+		(TCHAR)' ',      // Character to write to the buffer
+		dwConSize,       // Number of cells to write
+		coordScreen,     // Coordinates of first cell
+		&cCharsWritten)) // Receive number of characters written
 	{
 		return;
 	}
@@ -70,11 +83,11 @@ void cls(HANDLE hConsole)
 	}
 
 	// Set the buffer's attributes accordingly.
-	if (!FillConsoleOutputAttribute(hConsole,		  // Handle to console screen buffer
-									csbi.wAttributes, // Character attributes to use
-									dwConSize,		  // Number of cells to set attribute
-									coordScreen,	  // Coordinates of first cell
-									&cCharsWritten))  // Receive number of characters written
+	if (!FillConsoleOutputAttribute(hConsole,         // Handle to console screen buffer
+		csbi.wAttributes, // Character attributes to use
+		dwConSize,        // Number of cells to set attribute
+		coordScreen,      // Coordinates of first cell
+		&cCharsWritten))  // Receive number of characters written
 	{
 		return;
 	}
@@ -83,233 +96,170 @@ void cls(HANDLE hConsole)
 	SetConsoleCursorPosition(hConsole, coordScreen);
 }
 
-//command "more"
-void more(char *argv[8], int *argc)
-{
-	cls(handle_out);
-	// no arguments
-	if ((*argc) == 0)
-	{
-		WriteConsole(
-			handle_out,
-			"Please enter arguments. For further info, try 'man more'\n",
-			strlen("Please enter arguments. For further info, try 'man more'\n"),
-			&dw,
-			NULL);
+
+// string copy
+static inline void strmcpy(char* dst, const char* src) {
+	wsprintf(dst, TEXT("%s"), src);
+}
+
+// search the command table
+static inline int search_commd(char* commd) {
+	for (int i = 0; i <= COMMD_NUM - 1; i++) {
+		if (!strcmp(commd, commd_table[i])) return i;
+	}
+	return -1;
+}
+
+// set progress
+void set_process(int count_c ,arg arg[MAX_ARG_NUM]) {
+	//int pos;
+ //	if (!count_c && count_c != count_q - 1) pos = FIRST;
+	//else if (count_c == count_q - 1) pos = LAST;
+	//else pos = MIDDLE;
+	char* commd = (char*)malloc(MAX_LENGTH * sizeof(char));
+	if (!strcmp(arg[count_c].input, "") && !strcmp(arg[count_c].output, "")) {
 		return;
 	}
-	FILE *fp;
-	errno_t err = fopen_s(&fp, argv[1], "r");
-	if (err)
+	else if (!strcmp(arg[count_c].input, "") && strcmp(arg[count_c].output, "") && !strcmp(arg[count_c].overwrite, "")) {
+		wsprintf(commd, TEXT("%s.exe %s %s %s"), commd_table[commd_queue[count_c]], "STD_INPUT", arg[count_c].output, "TRUE");
+	}
+	else if (!strcmp(arg[count_c].output, "") && strcmp(arg[count_c].input, "") && !strcmp(arg[count_c].overwrite, "")) {
+		wsprintf(commd, TEXT("%s.exe %s %s %s"), commd_table[commd_queue[count_c]], arg[count_c].input, "STD_OUTPUT", "TRUE");
+	}
+	else if (!strcmp(arg[count_c].input, "") && strcmp(arg[count_c].output, "") && strcmp(arg[count_c].overwrite, "")) {
+		wsprintf(commd, TEXT("%s.exe %s %s %s"), commd_table[commd_queue[count_c]], "STD_INPUT", arg[count_c].output, arg[count_c].overwrite);
+	}
+	else if (!strcmp(arg[count_c].output, "") && strcmp(arg[count_c].input, "") && strcmp(arg[count_c].overwrite, "")){
+		wsprintf(commd, TEXT("%s.exe %s %s %s"), commd_table[commd_queue[count_c]], arg[count_c].input, "STD_OUTPUT", arg[count_c].overwrite);
+	}
+	else if (!strcmp(arg[count_c].overwrite, "")) {
+		wsprintf(commd, TEXT("%s.exe %s %s %s"), commd_table[commd_queue[count_c]], arg[count_c].input, arg[count_c].output, "TRUE");
+	}
+	else {
+		wsprintf(commd, TEXT("%s.exe %s %s %s"), commd_table[commd_queue[count_c]], arg[count_c].input, arg[count_c].output, arg[count_c].overwrite);
+	}
+	// optional arguments
+	wsprintf(commd, TEXT("%s %s"), commd, arg[count_c].opt_arg);
+
+	if (!CreateProcess(NULL,   // No module name (use command line)
+		commd,        // Command line
+		NULL,           // Process handle not inheritable
+		NULL,           // Thread handle not inheritable
+		FALSE,          // Set handle inheritance to FALSE
+		0,              // No creation flags
+		NULL,           // Use parent's environment block
+		NULL,           // Use parent's starting directory
+		&si,            // Pointer to STARTUPINFO structure
+		&pi)           // Pointer to PROCESS_INFORMATION structure
+		)
 	{
-		WriteConsole(handle_out,
-					 "Failed to open file\n",
-					 strlen("Failed to open file\n"),
-					 &dw,
-					 NULL);
+		WriteConsole(handle_out, "CreateProcess failed\n", strlen("CreateProcess failed\n"), NULL, NULL);
 		return;
 	}
-	CONSOLE_SCREEN_BUFFER_INFO csbi;
+	WaitForSingleObject(pi.hProcess, INFINITE);
+	CloseHandle(pi.hProcess);
+	CloseHandle(pi.hThread);
+}
 
-	int conf, flag,
-		count = 0, count_c = 1,
-		size = 1, size_r, size_c, pctg,
-		page_num = 0, index[MAX_PAGENUM];
-	char tmp, fst_char;
-
-	index[page_num] = 0;
-	fst_char = fgetc(fp);
-	while (tmp = fgetc(fp) != EOF)
-	{
-		size++;
-	}
-	fseek(fp, 0, SEEK_SET);
-
-	//
-	if (argc == 2)
-	{
-	}
-
-	while (fp)
-	{
-		flag = 0;
-		// get window size
-		GetConsoleScreenBufferInfo(handle_out, &csbi);
-		size_r = csbi.srWindow.Right - csbi.srWindow.Left + 1;
-		size_c = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
-		count++;
-
-		tmp = fgetc(fp);
-		// EOF keyboard response
-		flag = 1;
-		while (tmp == EOF && flag == 1)
-		{
-			conf = -1;
-			if (_kbhit())
-				conf = _getch();
-			switch (conf)
-			{
-			case ('b'):
-				cls(handle_out);
-				count = 0;
-				count_c = 1;
-				flag = -1;
-				if (page_num == 1)
-					fseek(fp, 0, SEEK_SET);
-				else
-					fseek(fp, index[page_num - 1], SEEK_SET);
-				page_num--;
-				break;
-
-			case ('q'):
-				cls(handle_out);
-				return;
-
-			default:
-				break;
-			}
-		}
-		// another line
-		if (tmp == '\n' || count >= size_r)
-		{
-			count_c++;
-			count = 0;
-		}
-		// another page
-		if (count_c >= size_c)
-		{
-			page_num++;
-			index[page_num] = ftell(fp);
-			pctg = ((double)ftell(fp) / (double)size) * 100.0;
-			printf("\n --MORE %d%%--", pctg);
-			flag = 2;
-		}
-		while (flag == 2)
-		{
-			conf = -1;
-			if (_kbhit())
-			{
-				conf = _getch();
-			}
-			// keyboard response
-			switch (conf)
-			{
-			case (' '):
-				cls(handle_out);
-				count = 0;
-				count_c = 1;
-				flag = -2;
-				break;
-
-			case ('\r'):
-				/* TODO */
-
-			case ('b'):
-				if (page_num == 1)
-					break;
-				cls(handle_out);
-				count = 0;
-				count_c = 1;
-				flag = -2;
-				if (page_num == 2)
-					fseek(fp, 0, SEEK_SET);
-				else
-					fseek(fp, index[page_num - 2], SEEK_SET);
-				page_num -= 2;
-				break;
-
-			case ('q'):
-				cls(handle_out);
-				return;
-
-			default:
-				break;
-			}
-		}
-		if (flag == -1 || flag == -2)
+// command parser
+int parser(char *argv[MAX_ARG_NUM], int* argc, int commd_queue[MAX_ARG_NUM], arg arg[MAX_ARG_NUM]) {
+	// size_t i = 0;
+	int i, fi, fo, fow ,fop;
+	count_a = 0;
+	count_q = 0;
+	while (argv[count_a] != "" && count_a < (*argc) + 1 && count_q < (*argc) + 1) { // generate a command queue
+		i = 0; 
+		fi = 0, fo = 0, fow = 0, fop = 0;
+		int index = search_commd(argv[count_a]);
+		if (index == -1) {
+			count_a++;
 			continue;
-		if (!ftell(fp))
-		{
-			putchar(fst_char);
 		}
-		else
-		{
-			putchar(tmp);
+		commd_queue[count_q] = index;
+		count_a++;
+		count_q++;
+		if (count_a < (*argc) + 1 && !strcmp(argv[count_a - 1], "|")) {
+			continue;
 		}
-		// WriteConsole(handle_out, tmp, strlen(tmp), &dw, NULL);
+		else if (count_a + 1 <= (*argc) && !strcmp(argv[count_a], "<")) {
+			strmcpy(arg[count_q - 1].input, argv[count_a + 1]);
+			fi = 1;
+		}
+		else if (count_a - 3 >= 0 && !strcmp(argv[count_a - 2], ">")) {
+			strmcpy(arg[count_q - 1].input, argv[count_a - 3]);
+			fi = 1;
+		}
+
+		i = count_a - 1;
+		while (!fi && i-- > 0) {
+			if (i - 1 < 0 || strcmp(argv[i], "|")) continue;
+			if (count_q - 1 == 0) {
+				strmcpy(arg[0].input, argv[0]);
+				fi = 1;
+				break;
+			}
+			strmcpy(arg[count_q - 1].input, PIPE);
+			fi = 1;
+		}
+
+		i = count_a - 1;
+		while (!fi && i++ < (*argc)) {
+			if (!strcmp(argv[i], "|") || !strcmp(argv[i], ">") || !strcmp(argv[i], ">>") || !strcmp(argv[i], "<")) break;
+			if (i == count_a) {
+				strmcpy(arg[count_q - 1].opt_arg, argv[i]);
+				wsprintf(arg[count_q - 1].opt_arg, TEXT("%s%s"), arg[count_q - 1].opt_arg, " ");
+				fop = 1;
+			}
+			else {
+				wsprintf(arg[count_q - 1].opt_arg, TEXT("%s %s"), arg[count_q - 1].opt_arg, argv[i]);
+				fop = 1;
+			}
+		}
+
+		if (!fop) strmcpy(arg[count_q - 1].opt_arg, "");
+
+		if(fi == 0) strmcpy(arg[count_q - 1].input, "STD_INPUT");
+
+		i = count_a - 1;
+		while (i-- > 0) {
+			if (i - 1 < 0 || strcmp(argv[i], "<")) continue;
+			strmcpy(arg[count_q - 1].output, argv[i - 1]);
+			fo = 1;
+		}
+		i = count_a - 1;
+
+		while (!fo && i++ < (*argc)) {
+			if (i + 1 > (*argc) || strcmp(argv[i], ">")) continue;
+			strmcpy(arg[count_q - 1].output, argv[i + 1]);
+			fo = 1;
+		}
+
+		i = count_a - 1;
+		while (!fo && i++ < (*argc)) {
+			if (i + 1 > (*argc) || strcmp(argv[i], ">>")) continue;
+			strmcpy(arg[count_q - 1].overwrite, "FALSE");
+			fow = 1;
+			strmcpy(arg[count_q - 1].output, argv[i + 1]);
+			fo = 1;
+		}
+		i = count_a - 1;
+		while (!fo && i++ < (*argc)) {
+			if (i + 1 > (*argc) || strcmp(argv[i], "|")) continue;
+			strmcpy(arg[count_q - 1].output, PIPE);
+			fo = 1;
+		}
+
+		if (!fo) strmcpy(arg[count_q - 1].output, "STD_OUTPUT");
+		if (!fow) strmcpy(arg[count_q - 1].overwrite, "TRUE");
 	}
-	// cls(handle_out);
-	fclose(fp);
-	WriteConsole(handle_out, "\n", strlen("\n"), &dw, NULL);
+	return count_q; // number of commands
 }
 
-// command "sort"
-int cmpfunc(const void *a, const void *b)
-{
-	line *line1 = a;
-	line *line2 = b;
-	return (*line1).fst_char - (*line2).fst_char;
+// process the queue
+void process_queue(int commd_queue[MAX_ARG_NUM], arg arg[MAX_ARG_NUM]) {
+	int count_c = 0;
+	while (count_c < count_q) {
+		set_process(count_c, arg);
+		count_c++;
+	}
 }
-
-void sort(char *argv[8], int *argc)
-{
-	cls(handle_out);
-	// no arguments
-	if ((*argc) == 0)
-	{
-		WriteConsole(
-			handle_out,
-			"Please enter arguments. For further info, try 'man sort'\n",
-			strlen("Please enter arguments. For further info, try 'man sort'\n"),
-			&dw,
-			NULL);
-		return;
-	}
-	FILE *fp;
-	errno_t err = fopen_s(&fp, argv[1], "r");
-	if (err)
-	{
-		WriteConsole(handle_out,
-					 "Failed to open file\n",
-					 strlen("Failed to open file\n"),
-					 &dw,
-					 NULL);
-		return;
-	}
-
-	line lineset[MAX_LENGTH];
-	char tmp[MAX_LENGTH];
-	int seq = 0, i;
-
-	// read in line by line
-	while (fp && seq < MAX_LENGTH)
-	{
-		i = 0;
-		lineset[seq].offset = ftell(fp);
-		if (fgets(tmp, MAX_LENGTH, fp))
-			;
-		lineset[seq].fst_char = tmp[0];
-		while (tmp[i] != '\0')
-		{
-			i++;
-		}
-		if (tmp[i - 1] != '\n')
-			break;
-		seq++;
-	}
-	// sort by first char
-	qsort(lineset, seq + 1, sizeof(line), cmpfunc);
-	// print sorted text
-	for (i = 0; i <= seq; ++i)
-	{
-		fseek(fp, lineset[i].offset, SEEK_SET);
-		fgets(tmp, MAX_LENGTH, fp);
-		printf("%s", tmp);
-	}
-	fclose(fp);
-	return 0;
-}
-
-// command ""
-
-/* TODO */

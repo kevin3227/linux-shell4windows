@@ -19,6 +19,7 @@ char *pswbuff;
 BOOL login(struct login_context *cxt)
 {
     struct passwd pw;
+    char *uid = (char *)malloc(sizeof(char) * 2);
     if (dLogin_initial(&pw))
     {
         return GetLastError();
@@ -54,31 +55,38 @@ BOOL login(struct login_context *cxt)
             WriteConsole(handle_out, "password: ", strlen("password: "), &dw, NULL);
 
             // set console input disable echo mode
-            // iMode = oldIMode;
-            // iMode &= ~ENABLE_ECHO_INPUT;
-            // if (!SetConsoleMode(handle_in, iMode))
-            // {
-            //     return GetLastError();
-            // }
+            iMode = oldIMode;
+            iMode &= ~ENABLE_ECHO_INPUT;
+            if (!SetConsoleMode(handle_in, iMode))
+            {
+                return GetLastError();
+            }
 
             //get passowrd
             ReadConsole(handle_in, pswbuff, 32, &dw, NULL);
             pswbuff[dget_inputlenth(pswbuff)] = '\0';
 
             //reset input_mode
-            // if (!SetConsoleMode(handle_in, oldIMode))
-            // {
-            //     return GetLastError();
-            // }
+            if (!SetConsoleMode(handle_in, oldIMode))
+            {
+                return GetLastError();
+            }
 
             if (bgetpswbyname(pw.pw_passwd, pw.pw_name))
             {
                 WriteConsole(handle_out, "\nGET PASSWORD WRONG\n", strlen("\nGET PASSWORD WRONG\n"), &dw, NULL);
                 return 1;
             }
+            if (bgetidbyname(uid, pw.pw_name))
+            {
+                WriteConsole(handle_out, "\nGET UID WRONG\n", strlen("\nGET UID WRONG\n"), &dw, NULL);
+                return 1;
+            }
             //check passowrd
             if (!bcheck_psw(pswbuff, &pw))
             {
+                cxt->pwd = &pw;
+                cxt->uid = uid;
                 free(usrbuff);
                 free(pswbuff);
                 return 0;
@@ -101,16 +109,19 @@ BOOL passwd(char *argv, char *id)
 {
     if (bpasswd_initial())
     {
+		WriteConsole(handle_out, "\nPASSWORD INITIAL FAILED\n", strlen("\nPASSWORD INITIAL FAILED\n"), &dw, NULL);
         return 1;
     }
     char *name = (char *)malloc(sizeof(char) * 16);
     if (!name)
     {
+		WriteConsole(handle_out, "\nNAME INITIAL FAILED\n", strlen("\nNAME INITIAL FAILED\n"), &dw, NULL);
         return 1;
     }
 
     if (bgetnamebyid(name, id))
     {
+		WriteConsole(handle_out, "\GET NAME FAILED\n", strlen("\nGET NAME FAILED\n"), &dw, NULL);
         return 1;
     }
 
@@ -118,6 +129,7 @@ BOOL passwd(char *argv, char *id)
     {
         if (bcmpstring(name, "root"))
         {
+			WriteConsole(handle_out, "\NO PERMISSION\n", strlen("\nNO PERMISSION\n"), &dw, NULL);
             return 1;
         }
     }
@@ -129,21 +141,23 @@ BOOL passwd(char *argv, char *id)
     char *psw1 = (char *)malloc(sizeof(char) * 16);
     if (!psw1)
     {
+		WriteConsole(handle_out, "\nPASSWORD INITIAL FAILED\n", strlen("\nPASSWORD INITIAL FAILED\n"), &dw, NULL);
         return 1;
     }
     if (bgetpswbyname(psw1, name))
     {
+		WriteConsole(handle_out, "\nGET PASSWORD FAILED\n", strlen("\nnGET PASSWORD FAILED\n"), &dw, NULL);
         return 1;
     }
     WriteConsole(handle_out, "\npassword: ", strlen("\npassword: "), &dw, NULL);
     // set console input disable echo mode
 
-    // iMode = oldIMode;
-    // iMode &= ~ENABLE_ECHO_INPUT;
-    // if (!SetConsoleMode(handle_in, iMode))
-    // {
-    //     return GetLastError();
-    // }
+     iMode = oldIMode;
+     iMode &= ~ENABLE_ECHO_INPUT;
+     if (!SetConsoleMode(handle_in, iMode))
+     {
+         return GetLastError();
+     }
 
     //get passowrd
     ReadConsole(handle_in, pswbuff, 32, &dw, NULL);
@@ -155,27 +169,36 @@ BOOL passwd(char *argv, char *id)
     pswhash = cHashMD5(pswbuff, &result);
     if (result)
     {
+		WriteConsole(handle_out, "\nHASH FAILED\n", strlen("\nHASH FAILED\n"), &dw, NULL);
         return 1;
     }
     if (bcmpstring(pswhash, psw1))
     {
+		WriteConsole(handle_out, "\nWRONG PASSWORD\n", strlen("\nWRONG PASSWORD\n"), &dw, NULL);
         return 1;
     }
-    WriteConsole(handle_out, "(new)password: ", strlen("(new)password: "), &dw, NULL);
+    WriteConsole(handle_out, "\n(new)password: ", strlen("\n(new)password: "), &dw, NULL);
     ReadConsole(handle_in, pswbuff, 32, &dw, NULL);
     pswbuff[dget_inputlenth(pswbuff)] = '\0';
 
     //reset input_mode
-    // if (!SetConsoleMode(handle_in, oldIMode))
-    // {
-    //     return GetLastError();
-    // }
+     if (!SetConsoleMode(handle_in, oldIMode))
+     {
+         return GetLastError();
+     }
 
-    if (bwritepsw(argv, pswbuff))
-        return 1;
-    free(name);
-    free(psw1);
-    WriteConsole(handle_out, "SUCCEED", strlen("SUCCEED"), &dw, NULL);
+	 if (bwritepsw(argv, pswbuff)) 
+	 {
+		 WriteConsole(handle_out, "\n WRITE PASSWORD WRONG \n", strlen("\n WRITE PASSWORD WRONG \n"), &dw, NULL);
+		 return 1;
+	 }
+	 if (name)
+	 {
+		 free(name);
+	 }
+	 if (psw1) {
+		 free(psw1);
+	 }
     return 0;
 }
 
@@ -341,7 +364,7 @@ BOOL bget_usr(char *usrbuff)
                     free(tmpbuff);
                     CloseHandle(hFile);
                     CloseHandle(hEvent);
-                    WriteConsole(handle_out, "\nFIND USER SUCCEED\n", strlen("\nFIND USER SUCCEED\n"), &dw, NULL);
+                    // WriteConsole(handle_out, "\nFIND USER SUCCEED\n", strlen("\nFIND USER SUCCEED\n"), &dw, NULL);
                     return 0;
                 }
                 count = 0;
@@ -477,6 +500,78 @@ BOOL bwfile_init(char *path)
         return GetLastError();
     }
     return 0;
+}
+
+BOOL bgetidbyname(char *uid, char *name)
+{
+    if (brfile_init("usr.txt"))
+    {
+        return 1;
+    }
+    DWORD dwBytesRead = 0;                             //actual lenth of readbytes
+    BOOL bContinue = TRUE;                             //read file control sign
+    OVERLAPPED stOverlapped = {0};                     //read file info(offset)
+    stOverlapped.hEvent = hEvent;                      //read event
+    char *rbuff = (char *)malloc(1);                   //a char buffer read from file
+    DWORD dwFileSize = GetFileSize(hFile, NULL);       //get file size
+    char *tmpbuff = (char *)malloc(sizeof(char) * 48); //a string buffer from file
+    int count = 0, tmpcount = 0;                       // read buffer offset
+    int flag = 0;
+    while (bContinue)
+    {
+        bContinue = FALSE;
+        ReadFile(hFile, rbuff, 1, &dwBytesRead, &stOverlapped);
+        // WriteConsole(handle_out, rbuff, 1, &dw, NULL);
+        tmpbuff[count] = *rbuff;
+        count++;
+        //save a group of parameters from a line
+        if (*rbuff == ':')
+        {
+            if (tmpcount == 0)
+            {
+                tmpbuff[--count] = '\0';
+                if (!bcmpstring(tmpbuff, name))
+                {
+                    flag = 1;
+                }
+            }
+            tmpcount++;
+            count = 0;
+        }
+        //save the last parameter
+        else if (*rbuff == '\r')
+        {
+            tmpbuff[--count] = '\0';
+            if (!bcpstring(tmpbuff, uid, count) && flag)
+            {
+                // WriteConsole(handle_out, tmpbuff, strlen(tmpbuff), &dw, NULL);
+                free(tmpbuff);
+                free(rbuff);
+                CloseHandle(hFile);
+                CloseHandle(hEvent);
+                return 0;
+            }
+            count--;
+            // WriteConsole(handle_out, cxt->uid, strlen(cxt->uid), &dw, NULL);
+        }
+        //check input_user is in this line.
+        else if (*rbuff == '\n')
+        {
+            tmpcount = 0;
+            count = 0;
+        }
+
+        stOverlapped.Offset = stOverlapped.Offset + dwBytesRead;
+        if (stOverlapped.Offset < dwFileSize)
+            bContinue = TRUE;
+    }
+
+    free(tmpbuff);
+    free(rbuff);
+    CloseHandle(hFile);
+    CloseHandle(hEvent);
+
+    return 1;
 }
 
 BOOL bgetnamebyid(char *name, char *uid)
@@ -628,6 +723,7 @@ BOOL bwritepsw(char *name, char *psw)
 {
     if (bwfile_init("passwd.txt"))
     {
+		WriteConsole(handle_out, "\n OPEN PASSWORD FILE WRONG! \n", strlen("\n OPEN PASSWORD FILE WRONG! \n"), &dw, NULL);
         return 1;
     }
     DWORD dwBytesRead = 0, pswoffset = 0;              //actual lenth of readbytes
@@ -652,7 +748,7 @@ BOOL bwritepsw(char *name, char *psw)
             if (tmpcount == 0)
             {
                 tmpbuff[--count] = '\0';
-                if (!bcmpstring(tmpbuff, rbuff))
+                if (!bcmpstring(tmpbuff, name))
                 {
                     char *pswhash;
                     DWORD result = 0, dwbyteswritten;
@@ -699,7 +795,7 @@ BOOL bwritepsw(char *name, char *psw)
     free(rbuff);
     CloseHandle(hFile);
     CloseHandle(hEvent);
-
+	WriteConsole(handle_out, "\n WRONG! \n", strlen("\n WRONG! \n"), &dw, NULL);
     return 1;
 }
 

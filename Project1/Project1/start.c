@@ -7,15 +7,14 @@ DWORD dw;
 
 int main(int argc, char *argv[])
 {
-    struct login_context cxt;
+	//passwd(NULL, "1");
+	struct login_context cxt;
     if (login(&cxt))
     {
         WriteConsole(handle_out, "\nLOGIN FAILED\n", strlen("\nLOGIN FAILED\n"), &dw, NULL);
         return 0;
     }
     WriteConsole(handle_out, "\nLOGIN SUCCESS\n", strlen("\nLOGIN SUCCESS\n"), &dw, NULL);
-    CloseHandle(handle_in);
-    CloseHandle(handle_out);
     cls(handle_out);
     STARTUPINFO si;
     PROCESS_INFORMATION pi;
@@ -35,12 +34,7 @@ int main(int argc, char *argv[])
                        &si,        // Pointer to STARTUPINFO structure
                        &pi)        // Pointer to PROCESS_INFORMATION structure
     )
-    {
-        WriteConsole(handle_out, "\nCREATE PROCESS FAILED\n", strlen("\nCREATE PROCESS FAILED\n"), &dw, NULL);
-        return GetLastError();
-    }
-    // WriteConsole(handle_out, "\nCREATE PROCESS SUCCEED\n", strlen("\nCREATE PROCESS SUCCEED\n"), &dw, NULL);
-
+	WriteConsole(handle_out, cxt.uid, strlen(cxt.uid), &dw, NULL);
     // Wait until child process exits.
     WaitForSingleObject(pi.hProcess, INFINITE);
 

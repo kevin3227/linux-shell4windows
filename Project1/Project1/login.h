@@ -26,7 +26,7 @@ struct login_context
 //command "login"
 BOOL login(struct login_context *cxt);
 //command "passwd"
-BOOL passwd();
+BOOL passwd(char* argv,char* uid);
 //command "logout"
 BOOL logout();
 
@@ -38,7 +38,7 @@ BOOL bwfile_init(char *path);
 BOOL bget_usr(char *usrbuff);
 BOOL bcheck_psw(char *pswbuff, struct passwd *pw);
 char *cHashMD5(char *data, DWORD *result);
-
+BOOL bgetidbyname(char *uid, char *name);
 BOOL bgetnamebyid(char *name, char *id);
 BOOL bgetpswbyname(char *psw, char *name);
 BOOL bwritepsw(char *name, char *psw);

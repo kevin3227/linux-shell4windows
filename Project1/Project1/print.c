@@ -1,93 +1,138 @@
-//--------------------------------------------------------------------
-//  Declare variables.
-#include "windows.h"
-#include <stdio.h>
-//--------------------------------------------------------------------
-// Get a handle to a cryptography provider context.
-int main(int argc, char *argv[])
+#include "commd.h"
+#include <windows.h>
+void main(int argc, char *argv[])
 {
-    // argv[0] = ".\1.exe";
-    // argv[1] = "%s%d\\n\\t%f";
-    // argv[3] = "hello";
-    // argv[2] = "1.0";
-    // argv[4] = "20";
-    // argc = 5;
-    char *p = argv[1];
-    int value = 2;
-    while (*p != '\0' && value < argc)
+    HANDLE handle_out;
+    LARGE_INTEGER liCurrentPosition;
+    liCurrentPosition.QuadPart = 0;
+    if (!strcmp(OUTPUT_TYPE, PIPE))
     {
+        handle_out = CreateFile(PIPE, GENERIC_WRITE, FILE_SHARE_WRITE, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);
+    }
+    else if (strcmp(OUTPUT_TYPE, "STD_OUTPUT"))
+    {
+        if (!strcmp(OVERWRITE, "FALSE"))
+        {
+            if (handle_out = CreateFile(OUTPUT_TYPE, GENERIC_WRITE, FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0) == INVALID_HANDLE_VALUE)
+            {
+                handle_out = GetStdHandle(STD_OUTPUT_HANDLE);
+                WriteConsole(handle_out, "Failed to open file\n",
+                             strlen("Failed to open file\n"),
+                             &dw,
+                             NULL);
+                return;
+            }
+            handle_out = CreateFile(OUTPUT_TYPE, GENERIC_WRITE, FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+            liCurrentPosition.QuadPart = 0;
+            SetFilePointerEx(handle_out, liCurrentPosition, NULL, FILE_END);
+        }
+        else
+        {
+            handle_out = CreateFile(OUTPUT_TYPE, GENERIC_WRITE, FILE_SHARE_WRITE, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);
+        }
+    }
+    else
+    {
+        handle_out = GetStdHandle(STD_OUTPUT_HANDLE);
+    }
+    DWORD dw;
+    char *p = argv[4];
+    int value = 5;
+
+    // argv[0] = ".\1.exe";
+    // argv[1] = "hello \\n%d %c %d";
+    // argv[2] = "1";
+    // argv[3] = "c";
+    // argv[4] = "1";
+    // argv[5] = "1.0";
+    // argv[6] = "2";
+    // argv[7] = "3";
+    // argc = 5;
+
+    // handle_out = GetStdHandle(STD_OUTPUT_HANDLE);
+    // DWORD dw;
+    // char *p = argv[1];
+    // int value = 2;
+
+    int i; //position of s1
+    char *tmp = NULL;
+    char *outbuff = (char *)malloc(sizeof(char) * 256);
+    int offset = 0;
+    while (*p != '\0' && value <= argc)
+    {
+        // WriteFile(handle_out, p, 1, &dw, NULL);
         if (*p != '%')
         {
             if (*p != '\\')
             {
-                printf("%c", *p++);
+                outbuff[offset++] = *p;
+                p++;
                 continue;
             }
-            int code;
+            char code;
             p++;
             switch (*p++)
             {
             case 'r':
-                code = 13;
+                code = '\r';
                 break;
             case 'n':
-                code = 10;
+                code = '\n';
                 break;
             case 't':
-                code = 9;
+                code = '\t';
                 break;
             default:
                 break;
             }
-            printf("%c", code);
+            outbuff[offset++] = code;
             continue;
         }
         p++;
         switch (*p++)
         {
         case 'd':
-            char *tmp = argv[value];
-            while (*tmp != '\0')
+            tmp = argv[value];
+            while (*tmp && *tmp != '\0')
             {
                 if (*tmp > '9' || *tmp < '0')
                 {
-                    printf("error");
                     exit(1);
                 }
                 tmp++;
             }
             break;
-
         case 's':
             break;
-
         case 'c':
             if (*(argv[value] + 1) != '\0')
             {
-                printf("error");
                 exit(1);
             }
             break;
-
         case 'f':
-            char *tmp2 = argv[value];
-            while (*tmp2 != '\0')
+            tmp = argv[value];
+            while (*tmp && *tmp != '\0')
             {
-                if ((*tmp2 > '9' || *tmp2 < '0') && *tmp2 != '.')
+                if ((*tmp > '9' || *tmp < '0') && *tmp != '.')
                 {
-                    printf("error");
                     exit(1);
                 }
-                tmp2++;
+                tmp++;
             }
             break;
-
         default:
-            printf("error");
             break;
         }
-        printf("%s", argv[value++]);
+        // WriteConsole(handle_out, argv[value], strlen(argv[value]), &dw, NULL);
+        for (i = 0; argv[value][i] != '\0'; i++)
+        {
+            outbuff[offset++] = argv[value][i];
+        }
+        value++;
     }
-
-    return 0;
+    outbuff[offset] = '\0';
+    WriteFile(handle_out, outbuff, strlen(outbuff), &dw, NULL);
+    WriteFile(handle_out, "\n", strlen("\n"), &dw, NULL);
+    free(outbuff);
 }

@@ -1,7 +1,1 @@
-﻿  login.c
-d:\mygit\linux-shell4windows\project1\project1\login.c(286): warning C4018: “<”: 有符号/无符号不匹配
-d:\mygit\linux-shell4windows\project1\project1\login.c(449): warning C4018: “<”: 有符号/无符号不匹配
-d:\mygit\linux-shell4windows\project1\project1\login.c(183): warning C4716: “logout”: 必须返回一个值
-  main.c
-d:\mygit\linux-shell4windows\project1\project1\main.c(52): warning C4133: “函数”: 从“char [2]”到“int *”的类型不兼容
-  Project1.vcxproj -> D:\MyGit\linux-shell4windows\Project1\Debug\main.exe
+﻿  Project1.vcxproj -> E:\Zk_C\CS\Repo\linux-shell4windows\Project1\Debug\main.exe
