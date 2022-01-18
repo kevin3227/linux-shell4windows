@@ -5,62 +5,49 @@ void main(int argc, char *argv[])
     HANDLE handle_out;
     LARGE_INTEGER liCurrentPosition;
     liCurrentPosition.QuadPart = 0;
-    if (!strcmp(OUTPUT_TYPE, PIPE))
-    {
-        handle_out = CreateFile(PIPE, GENERIC_WRITE, FILE_SHARE_WRITE, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);
-    }
-    else if (strcmp(OUTPUT_TYPE, "STD_OUTPUT"))
-    {
-        if (!strcmp(OVERWRITE, "FALSE"))
-        {
-            if (handle_out = CreateFile(OUTPUT_TYPE, GENERIC_WRITE, FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0) == INVALID_HANDLE_VALUE)
-            {
-                handle_out = GetStdHandle(STD_OUTPUT_HANDLE);
-                WriteConsole(handle_out, "Failed to open file\n",
-                             strlen("Failed to open file\n"),
-                             &dw,
-                             NULL);
-                return;
-            }
-            handle_out = CreateFile(OUTPUT_TYPE, GENERIC_WRITE, FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
-            liCurrentPosition.QuadPart = 0;
-            SetFilePointerEx(handle_out, liCurrentPosition, NULL, FILE_END);
-        }
-        else
-        {
-            handle_out = CreateFile(OUTPUT_TYPE, GENERIC_WRITE, FILE_SHARE_WRITE, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);
-        }
-    }
-    else
-    {
-        handle_out = GetStdHandle(STD_OUTPUT_HANDLE);
-    }
+    if (!strcmp(OUTPUT_TYPE, PIPE)) {
+		handle_out = CreateFile(PIPE, GENERIC_WRITE, FILE_SHARE_WRITE, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);
+	} 
+	else if (strcmp(OUTPUT_TYPE, "STD_OUTPUT")) {
+		if(!strcmp(OVERWRITE, "FALSE")) {
+			if (handle_out = CreateFile(OUTPUT_TYPE, GENERIC_WRITE, FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0) == INVALID_HANDLE_VALUE) {
+				handle_out = GetStdHandle(STD_OUTPUT_HANDLE);
+				WriteConsole(handle_out, "Failed to open file\n",
+				strlen("Failed to open file\n"),
+				&dw,
+				NULL);
+				return;
+			}
+			handle_out = CreateFile(OUTPUT_TYPE, GENERIC_WRITE, FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+			liCurrentPosition.QuadPart = 0;
+			SetFilePointerEx(handle_out, liCurrentPosition, NULL, FILE_END);
+		} 
+		else {
+			handle_out = CreateFile(OUTPUT_TYPE, GENERIC_WRITE, FILE_SHARE_WRITE, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);
+		}
+	}
+	else {
+		handle_out = GetStdHandle(STD_OUTPUT_HANDLE);
+	}
     DWORD dw;
+
+    //argv : .\1.exe "%s%s%s" s1 s2 s3
+    //argv[0] = ".\1.exe";
+    //argv[1] = "%s %s %d";
+    //argv[2] = "123";
+    //argv[3] = "321";
+    //argv[4] = "1";
+    //argc = 5;
+
     char *p = argv[4];
-    int value = 5;
+    int value = 5; 
+	int i; //position of s1
 
-    // argv[0] = ".\1.exe";
-    // argv[1] = "hello \\n%d %c %d";
-    // argv[2] = "1";
-    // argv[3] = "c";
-    // argv[4] = "1";
-    // argv[5] = "1.0";
-    // argv[6] = "2";
-    // argv[7] = "3";
-    // argc = 5;
-
-    // handle_out = GetStdHandle(STD_OUTPUT_HANDLE);
-    // DWORD dw;
-    // char *p = argv[1];
-    // int value = 2;
-
-    int i; //position of s1
     char *tmp = NULL;
     char *outbuff = (char *)malloc(sizeof(char) * 256);
     int offset = 0;
     while (*p != '\0' && value <= argc)
     {
-        // WriteFile(handle_out, p, 1, &dw, NULL);
         if (*p != '%')
         {
             if (*p != '\\')
@@ -86,6 +73,7 @@ void main(int argc, char *argv[])
                 break;
             }
             outbuff[offset++] = code;
+            p++;
             continue;
         }
         p++;
@@ -133,6 +121,6 @@ void main(int argc, char *argv[])
     }
     outbuff[offset] = '\0';
     WriteFile(handle_out, outbuff, strlen(outbuff), &dw, NULL);
-    WriteFile(handle_out, "\n", strlen("\n"), &dw, NULL);
+    WriteFile(handle_out, '\n', strlen('\n'), &dw, NULL);
     free(outbuff);
 }
