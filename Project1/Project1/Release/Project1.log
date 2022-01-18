@@ -1,7 +1,12 @@
-﻿  正在生成代码
-e:\zk_c\cs\project\project1\project1\main.c(65): warning C4715: “console”: 不是所有的控件路径都返回值
-  3 of 20 functions (15.0%) were compiled, the rest were copied from previous compilation.
-    0 functions were new in current compilation
-    0 functions had inline decision re-evaluated but remain unchanged
+﻿  commd.c
+  login.c
+e:\zk_c\cs\repo\linux-shell4windows\project1\project1\login.c(124): warning C4129: “G”: 不可识别的字符转义序列
+e:\zk_c\cs\repo\linux-shell4windows\project1\project1\login.c(132): warning C4129: “N”: 不可识别的字符转义序列
+e:\zk_c\cs\repo\linux-shell4windows\project1\project1\login.c(437): warning C4018: “<”: 有符号/无符号不匹配
+  main.c
+e:\zk_c\cs\repo\linux-shell4windows\project1\project1\main.c(45): warning C4033: “console”必须返回值
+  正在生成代码
+e:\zk_c\cs\repo\linux-shell4windows\project1\project1\main.c(68): warning C4715: “console”: 不是所有的控件路径都返回值
+  All 20 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
   已完成代码的生成
-  Project1.vcxproj -> E:\Zk_C\CS\Project\Project1\Release\main.exe
+  Project1.vcxproj -> E:\Zk_C\CS\Repo\linux-shell4windows\Project1\Release\main.exe

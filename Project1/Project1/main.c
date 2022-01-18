@@ -56,6 +56,9 @@ int console(char* uid) {
 		else {
 			process_queue(commd_queue, arg);
 		}
+		free(current_directory);
+		free(command);
+		free(argc);
 	}
 
 	CloseHandle(handle_out);

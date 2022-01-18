@@ -44,10 +44,6 @@ int console(char* uid) {
 		else if (!strcmp(argv[0], "logout")) {
 			return;
 		}
-		else if (!strcmp(argv[0], "clear")) {
-			cls(handle_out);
-			continue;
-		}
 		count_q = parser(argv, argc, commd_queue, arg);
 		if (!count_q) {
 			WriteConsole(handle_out, "Command not found\n", strlen("Command not found\n"), &dw, NULL);
